@@ -53,11 +53,24 @@ public class DrivenKey : MonoBehaviour
         float driverValue = GetPropertyValue(driverObject, driverProperty) - GetInitialDriverValue(driverProperty);
         float[] drivenValues = Interpolate(driverValue);
 
-        for (int i = 0; i < drivenProperties.Length; i++)
+        // 只处理实际设置了的属性数量
+        int propertyCount = GetActivePropertyCount();
+        for (int i = 0; i < propertyCount; i++)
         {
             // 应用驱动的增量值到被驱动对象的初始状态上
             SetPropertyValue(drivenObject, drivenProperties[i], GetInitialDrivenValue(drivenProperties[i]) + drivenValues[i]);
         }
+    }
+
+    // 获取实际激活的属性数量
+    private int GetActivePropertyCount()
+    {
+        for (int i = 0; i < drivenProperties.Length; i++)
+        {
+            if (drivenProperties[i] == PropertyType.PositionX && i > 0) // 使用PositionX作为未设置的标志
+                return i;
+        }
+        return drivenProperties.Length;
     }
 
     private float GetPropertyValue(Transform obj, PropertyType property)
@@ -127,13 +140,15 @@ public class DrivenKey : MonoBehaviour
             if (driverValue >= a.driverValue && driverValue <= b.driverValue)
             {
                 float t = (driverValue - a.driverValue) / (b.driverValue - a.driverValue);
-                return new float[]
+                int propertyCount = GetActivePropertyCount();
+                float[] result = new float[4];
+                
+                // 只插值实际需要的属性
+                for (int j = 0; j < propertyCount; j++)
                 {
-                    Mathf.Lerp(a.drivenValues[0], b.drivenValues[0], t),
-                    Mathf.Lerp(a.drivenValues[1], b.drivenValues[1], t),
-                    Mathf.Lerp(a.drivenValues[2], b.drivenValues[2], t),
-                    Mathf.Lerp(a.drivenValues[3], b.drivenValues[3], t)
-                };
+                    result[j] = Mathf.Lerp(a.drivenValues[j], b.drivenValues[j], t);
+                }
+                return result;
             }
         }
 
