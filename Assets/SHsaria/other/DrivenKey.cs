@@ -1,28 +1,31 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
 
 [System.Serializable]
 public class DrivenKeyframe
 {
     public float driverValue;
-    // 被驱动属性对应的数值，现支持最多4个属性
     public float[] drivenValues = new float[4];
 }
 
 public class DrivenKey : MonoBehaviour
 {
-    public Transform driverObject; // 驱动对象
-    public PropertyType driverProperty; // 驱动属性
-    public Transform drivenObject; // 被驱动对象
-    // 被驱动属性（最多4个）
+    public Transform driverObject;
+    public PropertyType driverProperty;
+    public Transform drivenObject;
     public PropertyType[] drivenProperties = new PropertyType[4];
-    public List<DrivenKeyframe> keyframes = new List<DrivenKeyframe>(); // 关键帧
+    public List<DrivenKeyframe> keyframes = new List<DrivenKeyframe>();
 
     private Vector3 initialDriverPosition;
     private Vector3 initialDrivenPosition;
     private Vector3 initialDriverRotation;
     private Vector3 initialDrivenRotation;
+
+    private float previousDriverAngle = 0f;
+    private float accumulatedDriverDelta = 0f;
+    private bool initialized = false;
+
+    private float[] accumulatedDrivenRotations = new float[4];
 
     public enum PropertyType
     {
@@ -32,6 +35,21 @@ public class DrivenKey : MonoBehaviour
 
     private void Start()
     {
+        if (drivenProperties == null)
+            drivenProperties = new PropertyType[0];
+
+        // 修复 keyframe 长度
+        foreach (var frame in keyframes)
+        {
+            if (frame.drivenValues == null || frame.drivenValues.Length < drivenProperties.Length)
+            {
+                float[] corrected = new float[drivenProperties.Length];
+                if (frame.drivenValues != null)
+                    frame.drivenValues.CopyTo(corrected, 0);
+                frame.drivenValues = corrected;
+            }
+        }
+
         if (driverObject != null)
         {
             initialDriverPosition = driverObject.localPosition;
@@ -41,6 +59,11 @@ public class DrivenKey : MonoBehaviour
         {
             initialDrivenPosition = drivenObject.localPosition;
             initialDrivenRotation = drivenObject.localEulerAngles;
+
+            for (int i = 0; i < drivenProperties.Length; i++)
+            {
+                accumulatedDrivenRotations[i] = GetInitialDrivenValue(drivenProperties[i]);
+            }
         }
     }
 
@@ -49,28 +72,56 @@ public class DrivenKey : MonoBehaviour
         if (driverObject == null || drivenObject == null || keyframes.Count < 2)
             return;
 
-        // 计算驱动对象的增量值（相对于初始状态）
-        float driverValue = GetPropertyValue(driverObject, driverProperty) - GetInitialDriverValue(driverProperty);
-        float[] drivenValues = Interpolate(driverValue);
+        float driverValue;
 
-        // 只处理实际设置了的属性数量
-        int propertyCount = GetActivePropertyCount();
-        for (int i = 0; i < propertyCount; i++)
+        if (IsRotation(driverProperty))
         {
-            // 应用驱动的增量值到被驱动对象的初始状态上
-            SetPropertyValue(drivenObject, drivenProperties[i], GetInitialDrivenValue(drivenProperties[i]) + drivenValues[i]);
+            float currentAngle = GetRawAngle(driverObject, driverProperty);
+
+            if (!initialized)
+            {
+                previousDriverAngle = currentAngle;
+                initialized = true;
+            }
+
+            float delta = Mathf.DeltaAngle(previousDriverAngle, currentAngle);
+            accumulatedDriverDelta += delta;
+            previousDriverAngle = currentAngle;
+
+            driverValue = accumulatedDriverDelta;
+        }
+        else
+        {
+            driverValue = GetPropertyValue(driverObject, driverProperty) - GetInitialDriverValue(driverProperty);
+        }
+
+        float[] drivenValues = Interpolate(driverValue, drivenProperties.Length);
+
+        for (int i = 0; i < drivenProperties.Length; i++)
+        {
+            accumulatedDrivenRotations[i] = GetInitialDrivenValue(drivenProperties[i]) + drivenValues[i];
+            SetPropertyValue(drivenObject, drivenProperties[i], accumulatedDrivenRotations[i]);
         }
     }
 
-    // 获取实际激活的属性数量
-    private int GetActivePropertyCount()
+    private bool IsRotation(PropertyType property)
     {
-        for (int i = 0; i < drivenProperties.Length; i++)
+        return property == PropertyType.RotationX ||
+               property == PropertyType.RotationY ||
+               property == PropertyType.RotationZ;
+    }
+
+    private float GetRawAngle(Transform obj, PropertyType property)
+    {
+        switch (property)
         {
-            if (drivenProperties[i] == PropertyType.PositionX && i > 0) // 使用PositionX作为未设置的标志
-                return i;
+            case PropertyType.RotationX: return obj.localEulerAngles.x;
+            case PropertyType.RotationY: return obj.localEulerAngles.y;
+            case PropertyType.RotationZ: return obj.localEulerAngles.z;
+            default:
+                Debug.LogWarning("GetRawAngle used on non-rotation property.");
+                return 0f;
         }
-        return drivenProperties.Length;
     }
 
     private float GetPropertyValue(Transform obj, PropertyType property)
@@ -80,9 +131,9 @@ public class DrivenKey : MonoBehaviour
             case PropertyType.PositionX: return obj.localPosition.x;
             case PropertyType.PositionY: return obj.localPosition.y;
             case PropertyType.PositionZ: return obj.localPosition.z;
-            case PropertyType.RotationX: return NormalizeAngle(obj.localEulerAngles.x);
-            case PropertyType.RotationY: return NormalizeAngle(obj.localEulerAngles.y);
-            case PropertyType.RotationZ: return NormalizeAngle(obj.localEulerAngles.z);
+            case PropertyType.RotationX: return obj.localEulerAngles.x;
+            case PropertyType.RotationY: return obj.localEulerAngles.y;
+            case PropertyType.RotationZ: return obj.localEulerAngles.z;
             default: return 0f;
         }
     }
@@ -94,9 +145,9 @@ public class DrivenKey : MonoBehaviour
             case PropertyType.PositionX: return initialDriverPosition.x;
             case PropertyType.PositionY: return initialDriverPosition.y;
             case PropertyType.PositionZ: return initialDriverPosition.z;
-            case PropertyType.RotationX: return NormalizeAngle(initialDriverRotation.x);
-            case PropertyType.RotationY: return NormalizeAngle(initialDriverRotation.y);
-            case PropertyType.RotationZ: return NormalizeAngle(initialDriverRotation.z);
+            case PropertyType.RotationX: return initialDriverRotation.x;
+            case PropertyType.RotationY: return initialDriverRotation.y;
+            case PropertyType.RotationZ: return initialDriverRotation.z;
             default: return 0f;
         }
     }
@@ -108,28 +159,40 @@ public class DrivenKey : MonoBehaviour
             case PropertyType.PositionX: return initialDrivenPosition.x;
             case PropertyType.PositionY: return initialDrivenPosition.y;
             case PropertyType.PositionZ: return initialDrivenPosition.z;
-            case PropertyType.RotationX: return NormalizeAngle(initialDrivenRotation.x);
-            case PropertyType.RotationY: return NormalizeAngle(initialDrivenRotation.y);
-            case PropertyType.RotationZ: return NormalizeAngle(initialDrivenRotation.z);
+            case PropertyType.RotationX: return initialDrivenRotation.x;
+            case PropertyType.RotationY: return initialDrivenRotation.y;
+            case PropertyType.RotationZ: return initialDrivenRotation.z;
             default: return 0f;
         }
     }
 
     private void SetPropertyValue(Transform obj, PropertyType property, float value)
     {
-        Vector3 temp;
         switch (property)
         {
-            case PropertyType.PositionX: temp = obj.localPosition; temp.x = value; obj.localPosition = temp; break;
-            case PropertyType.PositionY: temp = obj.localPosition; temp.y = value; obj.localPosition = temp; break;
-            case PropertyType.PositionZ: temp = obj.localPosition; temp.z = value; obj.localPosition = temp; break;
-            case PropertyType.RotationX: temp = obj.localEulerAngles; temp.x = value; obj.localEulerAngles = temp; break;
-            case PropertyType.RotationY: temp = obj.localEulerAngles; temp.y = value; obj.localEulerAngles = temp; break;
-            case PropertyType.RotationZ: temp = obj.localEulerAngles; temp.z = value; obj.localEulerAngles = temp; break;
+            case PropertyType.PositionX:
+            case PropertyType.PositionY:
+            case PropertyType.PositionZ:
+                Vector3 pos = obj.localPosition;
+                if (property == PropertyType.PositionX) pos.x = value;
+                if (property == PropertyType.PositionY) pos.y = value;
+                if (property == PropertyType.PositionZ) pos.z = value;
+                obj.localPosition = pos;
+                break;
+
+            case PropertyType.RotationX:
+            case PropertyType.RotationY:
+            case PropertyType.RotationZ:
+                Vector3 rotation = obj.localEulerAngles;
+                if (property == PropertyType.RotationX) rotation = new Vector3(value, rotation.y, rotation.z);
+                if (property == PropertyType.RotationY) rotation = new Vector3(rotation.x, value, rotation.z);
+                if (property == PropertyType.RotationZ) rotation = new Vector3(rotation.x, rotation.y, value);
+                obj.localRotation = Quaternion.Euler(rotation);
+                break;
         }
     }
 
-    private float[] Interpolate(float driverValue)
+    private float[] Interpolate(float driverValue, int count)
     {
         keyframes.Sort((a, b) => a.driverValue.CompareTo(b.driverValue));
 
@@ -140,11 +203,8 @@ public class DrivenKey : MonoBehaviour
             if (driverValue >= a.driverValue && driverValue <= b.driverValue)
             {
                 float t = (driverValue - a.driverValue) / (b.driverValue - a.driverValue);
-                int propertyCount = GetActivePropertyCount();
-                float[] result = new float[4];
-                
-                // 只插值实际需要的属性
-                for (int j = 0; j < propertyCount; j++)
+                float[] result = new float[count];
+                for (int j = 0; j < count; j++)
                 {
                     result[j] = Mathf.Lerp(a.drivenValues[j], b.drivenValues[j], t);
                 }
@@ -152,18 +212,12 @@ public class DrivenKey : MonoBehaviour
             }
         }
 
-        // driverValue 比所有关键帧都小
-        if (driverValue < keyframes[0].driverValue)
-            return keyframes[0].drivenValues;
-
-        // driverValue 比所有关键帧都大
-        return keyframes[keyframes.Count - 1].drivenValues;
-    }
-
-    private float NormalizeAngle(float angle)
-    {
-        angle %= 360f;
-        if (angle > 180f) angle -= 360f;
-        return angle;
+        float[] fallback = new float[count];
+        float[] source = (driverValue < keyframes[0].driverValue) ? keyframes[0].drivenValues : keyframes[keyframes.Count - 1].drivenValues;
+        for (int j = 0; j < count; j++)
+        {
+            fallback[j] = source[j];
+        }
+        return fallback;
     }
 }

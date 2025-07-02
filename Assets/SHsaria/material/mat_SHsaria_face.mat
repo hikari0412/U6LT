@@ -56,7 +56,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _FaceLightMap:
-        m_Texture: {fileID: 2800000, guid: a8fff6688fe69d44fa77af584391de4d, type: 3}
+        m_Texture: {fileID: 2800000, guid: ac6d31f6139b8104cabe9ca7d84d4dda, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _IndirSpecCubemap:
