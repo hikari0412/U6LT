@@ -10,8 +10,8 @@ AnimatorStateMachine:
   m_Name: Base Layer
   m_ChildStates:
   - serializedVersion: 1
-    m_State: {fileID: -543228634399232864}
-    m_Position: {x: 356.96204, y: 207.97469, z: 0}
+    m_State: {fileID: -871712210522429182}
+    m_Position: {x: 415, y: 100, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
   m_EntryTransitions: []
@@ -21,15 +21,15 @@ AnimatorStateMachine:
   m_EntryPosition: {x: 50, y: 120, z: 0}
   m_ExitPosition: {x: 800, y: 120, z: 0}
   m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
-  m_DefaultState: {fileID: -543228634399232864}
---- !u!1102 &-543228634399232864
+  m_DefaultState: {fileID: -871712210522429182}
+--- !u!1102 &-871712210522429182
 AnimatorState:
   serializedVersion: 6
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: UC01_001_JAK01_003 (short)
+  m_Name: R2T1ZanniMd10011_ao|Run_F
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -42,7 +42,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: -6150270346426837497, guid: 6f7e0371a1f07ea49b5d6fe4d634ae6c, type: 3}
+  m_Motion: {fileID: -4513949615613583789, guid: 4f8e09b21a9e4694a9b3b8d8dbb42265, type: 3}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
