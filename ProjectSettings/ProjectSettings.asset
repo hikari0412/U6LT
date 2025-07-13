@@ -820,7 +820,7 @@ PlayerSettings:
   webGLCloseOnQuit: 0
   webWasm2023: 0
   scriptingDefineSymbols:
-    Standalone: MAGICACLOTH2
+    Standalone: MAGICACLOTH2;INVECTOR_BASIC;INVECTOR_MELEE;INVECTOR_SHOOTER
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:
