@@ -152,6 +152,7 @@ Material:
     - _PunctualRimWidth: 2.75
     - _QueueOffset: 0
     - _ReceiveShadows: 1
+    - _RimSoftPower: 3
     - _SHADOW_RAMP: 0
     - _ShadowOffset: 0.3
     - _ShadowSmoothNdotL: 0.1

@@ -20,7 +20,6 @@ Material:
   stringTagMap: {}
   disabledShaderPasses:
   - MOTIONVECTORS
-  - CharacterOutline
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
@@ -112,7 +111,7 @@ Material:
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DirectOcclusion: 0.1
-    - _DirectRimWidth: 2.5
+    - _DirectRimWidth: 5.78
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvColorLerp: 0.5
@@ -123,7 +122,7 @@ Material:
     - _FoldoutEmissRimEnd: 0
     - _FoldoutIndirectLight: 0
     - _FoldoutIndirectLightEnd: 0
-    - _FoldoutOutline: 0
+    - _FoldoutOutline: 2
     - _FoldoutOutlineEnd: 0
     - _FoldoutPBRProp: 0
     - _FoldoutPBRPropEnd: 0
@@ -138,7 +137,7 @@ Material:
     - _IndirDiffIntensity: 1
     - _IndirDiffUpDirSH: 0
     - _IndirSpecCubeWeight: 0.5
-    - _IndirSpecIntensity: 1
+    - _IndirSpecIntensity: 3
     - _MainLightColorLerp: 0.5
     - _Metallic: 0
     - _NormalScale: 1
@@ -148,17 +147,18 @@ Material:
     - _OutlineClampScale: 1
     - _OutlineDirectLightingOffset: 0
     - _OutlinePunctualLightingOffset: 0
-    - _OutlineWidth: 1
+    - _OutlineWidth: 0
     - _Parallax: 0.005
     - _PunctualRimWidth: 2.75
     - _QueueOffset: 0
     - _ReceiveShadows: 1
+    - _RimSoftPower: 1
     - _SHADOW_RAMP: 0
     - _ShadowOffset: 0.5
     - _ShadowSmoothNdotL: 0.25
     - _ShadowSmoothScene: 0.1
     - _ShadowStrength: 1
-    - _Smoothness: 0.8
+    - _Smoothness: 0.844
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
@@ -168,11 +168,11 @@ Material:
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.6320754, g: 0.22026248, b: 0.056648254, a: 1}
+    - _BaseColor: {r: 0.8207547, g: 0.23450133, b: 0, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _DirectRimBackCol: {r: 0.2, g: 0.2, b: 0.2, a: 0.5}
     - _DirectRimFrontCol: {r: 1, g: 1, b: 1, a: 0.5}
-    - _EmissionCol: {r: 0, g: 0, b: 0, a: 1}
+    - _EmissionCol: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 0.8}
     - _OutlineDirectLightingColor: {r: 1, g: 1, b: 1, a: 0.5}

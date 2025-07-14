@@ -137,7 +137,7 @@ Material:
     - _IndirDiffIntensity: 0.5
     - _IndirDiffUpDirSH: 0
     - _IndirSpecCubeWeight: 0.5
-    - _IndirSpecIntensity: 3
+    - _IndirSpecIntensity: 3.5
     - _MainLightColorLerp: 0.4
     - _Metallic: 1
     - _NormalScale: 1
@@ -152,6 +152,7 @@ Material:
     - _PunctualRimWidth: 2.75
     - _QueueOffset: 0
     - _ReceiveShadows: 1
+    - _RimSoftPower: 3
     - _SHADOW_RAMP: 0
     - _ShadowOffset: 0.3
     - _ShadowSmoothNdotL: 0.1
