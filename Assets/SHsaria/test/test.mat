@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: test
-  m_Shader: {fileID: 4800000, guid: 8146d972338ff894fb429f165801ea72, type: 3}
+  m_Shader: {fileID: 4800000, guid: 1ed5403678146694789b104fdba0e7d7, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -25,7 +25,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: e3c45c872f60fd5479fba98e5204c7d3, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
@@ -61,7 +61,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 1f5c08f2e0cb9c04fbe47d0bca7a21ff, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -69,7 +69,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _PBRMask:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 96310ee819f7cee4dac29fd83435086c, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ParallaxMap:
@@ -77,7 +77,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ShadowRampTex:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 3fd18c206950b5d49af4545f14139d6b, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SpecGlossMap:
@@ -110,8 +110,8 @@ Material:
     - _Cutoff: 0.5
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
-    - _DirectOcclusion: 0.1
-    - _DirectRimWidth: 5.78
+    - _DirectOcclusion: 0.4
+    - _DirectRimWidth: 1.8
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvColorLerp: 0.5
@@ -134,14 +134,14 @@ Material:
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _INDIR_CUBEMAP: 0
-    - _IndirDiffIntensity: 1
+    - _IndirDiffIntensity: 0.5
     - _IndirDiffUpDirSH: 0
     - _IndirSpecCubeWeight: 0.5
     - _IndirSpecIntensity: 3
-    - _MainLightColorLerp: 0.5
-    - _Metallic: 0
+    - _MainLightColorLerp: 0.8
+    - _Metallic: 1
     - _NormalScale: 1
-    - _Occlusion: 0
+    - _Occlusion: 1
     - _OcclusionStrength: 1
     - _OutLineNormalSource: 0
     - _OutlineClampScale: 1
@@ -149,38 +149,50 @@ Material:
     - _OutlinePunctualLightingOffset: 0
     - _OutlineWidth: 0
     - _Parallax: 0.005
-    - _PunctualRimWidth: 2.75
+    - _PunctualRimWidth: 1
     - _QueueOffset: 0
+    - _RampColorY: 0.625
     - _ReceiveShadows: 1
-    - _RimSoftPower: 1
+    - _RimIntensity: 1
+    - _RimRampIntensity: 3
+    - _RimRampY: 0.675
+    - _RimSoftIntensity: 0.58
+    - _RimSoftPower: 1.5
+    - _RimThreshold: 0.324
     - _SHADOW_RAMP: 0
     - _ShadowOffset: 0.5
-    - _ShadowSmoothNdotL: 0.25
+    - _ShadowSmoothNdotL: 0.1
     - _ShadowSmoothScene: 0.1
-    - _ShadowStrength: 1
-    - _Smoothness: 0.844
+    - _ShadowStrength: 0.7
+    - _Smoothness: 1
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
+    - _SpecularIntensity: 0.6
+    - _SpecularRampY: 0
+    - _SpecularThreshold: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _Surface: 0
     - _ToonFlagsKeywords: -1
+    - _UseRampMap: 0
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.8207547, g: 0.23450133, b: 0, a: 1}
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _DirectRimBackCol: {r: 0.2, g: 0.2, b: 0.2, a: 0.5}
     - _DirectRimFrontCol: {r: 1, g: 1, b: 1, a: 0.5}
-    - _EmissionCol: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionCol: {r: 0, g: 0, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 0.8}
     - _OutlineDirectLightingColor: {r: 1, g: 1, b: 1, a: 0.5}
     - _OutlinePunctualLightingColor: {r: 1, g: 1, b: 1, a: 0.5}
+    - _RimColor: {r: 0.4811321, g: 0.4811321, b: 0.4811321, a: 1}
     - _SelfEnvColor: {r: 0.5, g: 0.5, b: 0.5, a: 0.5}
-    - _SelfLight: {r: 1, g: 1, b: 1, a: 1}
-    - _ShadowColor: {r: 0, g: 0, b: 0, a: 1}
+    - _SelfLight: {r: 0.4716981, g: 0.4716981, b: 0.4716981, a: 1}
+    - _ShadowColor: {r: 0.22745098, g: 0.23921569, b: 0.27450982, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
+    - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &1885007003519230723
