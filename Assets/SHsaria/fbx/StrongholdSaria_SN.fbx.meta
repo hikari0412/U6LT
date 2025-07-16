@@ -8,7 +8,7 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: tex_SHsaria_acce
-    second: {fileID: 2100000, guid: 22f16ebe8c362454681ae3723c6ecf00, type: 2}
+    second: {fileID: 2100000, guid: 4bb53bc1a5f826448a2dc347525b103a, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -23,12 +23,12 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: tex_SHsaria_cloth1
-    second: {fileID: 2100000, guid: efa593b3783721e4f94ebde58b817a51, type: 2}
+    second: {fileID: 2100000, guid: ee53ed329fe8e0c4eb012ca85cb58511, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: tex_SHsaria_cloth2
-    second: {fileID: 2100000, guid: 008a8cadc305313469fb5f3e60360b75, type: 2}
+    second: {fileID: 2100000, guid: a3c3e777835013e49ab7a348ff6804cc, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule

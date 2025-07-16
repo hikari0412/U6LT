@@ -61,7 +61,7 @@ MonoBehaviour:
   active: 1
   skyType:
     m_OverrideState: 1
-    m_Value: 2
+    m_Value: 1
 --- !u!114 &-4123232347753993623
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -146,7 +146,7 @@ MonoBehaviour:
       m_Bits: 64
   intensity:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0.5
   penumbra:
     m_OverrideState: 1
     m_Value: 3
@@ -190,6 +190,7 @@ MonoBehaviour:
   - {fileID: -7404844710549663360}
   - {fileID: -1724569658920232742}
   - {fileID: 690075636677201046}
+  - {fileID: 7288723169287331421}
 --- !u!114 &690075636677201046
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -345,3 +346,58 @@ MonoBehaviour:
   dirtIntensity:
     m_OverrideState: 0
     m_Value: 0
+--- !u!114 &7288723169287331421
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84ea2044689082e498c8d3f7fb842f5d, type: 3}
+  m_Name: GradientSky
+  m_EditorClassIdentifier: 
+  active: 1
+  rotation:
+    m_OverrideState: 0
+    m_Value: 0
+  skyIntensityMode:
+    m_OverrideState: 0
+    m_Value: 0
+  exposure:
+    m_OverrideState: 0
+    m_Value: 0
+  multiplier:
+    m_OverrideState: 0
+    m_Value: 1
+  upperHemisphereLuxValue:
+    m_OverrideState: 0
+    m_Value: 1
+  upperHemisphereLuxColor:
+    m_OverrideState: 0
+    m_Value: {x: 0, y: 0, z: 0}
+  desiredLuxValue:
+    m_OverrideState: 0
+    m_Value: 20000
+  updateMode:
+    m_OverrideState: 0
+    m_Value: 0
+  updatePeriod:
+    m_OverrideState: 0
+    m_Value: 0
+  includeSunInBaking:
+    m_OverrideState: 0
+    m_Value: 0
+  top:
+    m_OverrideState: 1
+    m_Value: {r: 0.16981131, g: 0.16981131, b: 0.16981131, a: 1}
+  middle:
+    m_OverrideState: 1
+    m_Value: {r: 0.7075472, g: 0.7075472, b: 0.7075472, a: 1}
+  bottom:
+    m_OverrideState: 1
+    m_Value: {r: 0.8867924, g: 0.8867924, b: 0.8867924, a: 1}
+  gradientDiffusion:
+    m_OverrideState: 1
+    m_Value: 3.73

@@ -49,6 +49,7 @@ Shader "DanbaidongRP/PBRToon/Base_cus"
             _SpecularColor                         ("Specular Color", Color)                = (1,1,1,1)
             _SpecularIntensity                     ("Specular Intensity", Range(0,5))       = 1
             _SpecularThreshold                     ("Specular Threshold", Range(0,2))       = 1
+            _SpecularArea                          ("Specular Area", Range(0,1))            = 0.5
             _SpecularRampY                         ("Specular Ramp Y", Range(0,1))          = 0.5
             [Toggle(_INDIR_CUBEMAP)]_INDIR_CUBEMAP("_INDIR_CUBEMAP", Float)                 = 0
             [NoScaleOffset]
@@ -369,6 +370,7 @@ Shader "DanbaidongRP/PBRToon/Base_cus"
             float4  _SpecularColor;
             float   _SpecularIntensity;
             float   _SpecularThreshold;
+            float   _SpecularArea;    // Range(0,1)，控制高光面积，0.5为默认
             float   _SpecularRampY;      // Float（0/1），控制是否启用Ramp
 
             // Direct Light
@@ -401,6 +403,7 @@ Shader "DanbaidongRP/PBRToon/Base_cus"
             float   _PunctualRimWidth;
             float _RimIntensity;
             float _RimThreshold;
+            
             float _RimRampY;
             float4 _RimColor;
             float _RimSoftPower; // Range(0.1, 2)
@@ -490,39 +493,49 @@ Shader "DanbaidongRP/PBRToon/Base_cus"
             }
         }
 
-        float3 GF2_Specular(float NdotH, float3 specColor, float specIntensity, float threshold, bool useRampMap, float specRampY, float2 uv)
-        {
-            // 采样PBRMask G通道
-            float4 pbrMask = SAMPLE_TEXTURE2D(_PBRMask, sampler_PBRMask, uv);
-            float maskG = saturate(pbrMask.g);
+        // float3 GF2_Specular(float NdotH, float3 specColor, float specIntensity, float threshold, bool useRampMap, float specRampY, float2 uv)
+        // {
+        //     // 采样PBRMask G通道
+        //     float4 pbrMask = SAMPLE_TEXTURE2D(_PBRMask, sampler_PBRMask, uv);
+        //     float maskG = saturate(pbrMask.g);
 
-            // 高光面积和边缘宽度随G通道变化
-            float areaMin = 0.2;    // G=1时高光最小
-            float areaMax = 0.95;   // G=0时高光最大
-            float maskBasedThreshold = lerp(areaMax, areaMin, maskG); // G越大面积越小
-        
-            float softWidthMin = 0.03; // G=1时边缘锐利
-            float softWidthMax = 0.25; // G=0时边缘柔和
-            float softWidth = lerp(softWidthMax, softWidthMin, saturate((areaMax - maskBasedThreshold) / (areaMax - areaMin)));
+        //     // 面积与G通道关系
+        //     float areaMin = 0.2;    // G=1时高光最小
+        //     float areaMax = 0.95;   // G=0时高光最大
+        //     float maskBasedThreshold = lerp(areaMax, areaMin, maskG); // G越大面积越小（高光阈值高）
 
-            // 强度直接随G通道插值
-            float minSpecIntensity = 0.2;
-            float maxSpecIntensity = 1.2;
-            float finalIntensity = lerp(minSpecIntensity, maxSpecIntensity, maskG) * specIntensity;
-            float finalThreshold = lerp(maskBasedThreshold, threshold, 0.5); // 面板权重混合
+        //     // softWidth与面积挂钩，让面积大时边缘软
+        //     float softWidthMin = 0.03; // 最锐
+        //     float softWidthMax = 0.25; // 最软
+        //     // 关键：让softWidth正比于面积
+        //     float softWidth = lerp(softWidthMin, softWidthMax, saturate((areaMax - maskBasedThreshold) / (areaMax - areaMin)));
+
+        //     // 强度
+        //     float minSpecIntensity = 0.2;
+        //     float maxSpecIntensity = 1.2;
+        //     float finalIntensity = lerp(minSpecIntensity, maxSpecIntensity, maskG) * specIntensity;
+        //     float finalThreshold = lerp(maskBasedThreshold, threshold, 0.5); // 面板权重混合        
+
+        //     // --- 新增：根据finalThreshold做boost ---
+        //     float tNorm = saturate((finalThreshold - areaMin) / (areaMax - areaMin)); // 归一化到[0,1]
+        //     // 你可以调下面的范围，比如从1.0~2.0，阈值越大boost越高
+        //     float thresholdBoost = lerp(1.0, 5.0, tNorm);
             
-            float specFactor;
-            if (useRampMap)
-            {
-                float2 rampUV = float2(saturate((NdotH - finalThreshold) / max(1e-5, (1.0 - finalThreshold))), specRampY);
-                specFactor = SAMPLE_TEXTURE2D_LOD(_ShadowRampTex, sampler_ShadowRampTex, rampUV, 0.0).r * finalIntensity;
-            }
-            else
-            {
-                specFactor = smoothstep(finalThreshold, finalThreshold + softWidth, NdotH) * finalIntensity;
-            }
-            return specColor * specFactor;
-        }
+        //     float specFactor;
+        //     if (useRampMap)
+        //     {
+        //         float2 rampUV = float2(saturate((NdotH - finalThreshold) / max(1e-5, (1.0 - finalThreshold))), specRampY);
+        //         specFactor = SAMPLE_TEXTURE2D_LOD(_ShadowRampTex, sampler_ShadowRampTex, rampUV, 0.0).r * finalIntensity;
+        //     }
+        //     else
+        //     {
+        //         specFactor = smoothstep(finalThreshold, finalThreshold + softWidth, NdotH) * finalIntensity;
+        //     }
+
+        //     // 叠加boost
+        //     specFactor *= thresholdBoost;
+        //     return specColor * specFactor;
+        // }
 
         float3 GF2_Rim(float3 normalWS,float3 viewDirWS,float rimIntensity,float rimThreshold,bool useRampMap,float rimRampY,float rimSoftPower,float3 rimColor)
         {
@@ -675,6 +688,12 @@ Shader "DanbaidongRP/PBRToon/Base_cus"
                         shadowArea = lerp(1, shadowArea, _ShadowStrength);
                 
                         float3 shadowRamp = lerp(_ShadowColor.rgb, float3(1, 1, 1), shadowArea);
+
+                        // BRDF
+                        float3 F = F_Schlick(fresnel0, LdotH);
+                        float DV = DV_SmithJointGGX(NdotH, abs(NdotL), clampedNdotV, clampedRoughness);
+                        float3 specTerm = F * DV;
+                        
                         #ifdef _SHADOW_RAMP
                         shadowRamp = SampleDirectShadowRamp(TEXTURE2D_ARGS(_ShadowRampTex, sampler_ShadowRampTex), shadowArea).xyz;
                         #endif
@@ -685,12 +704,12 @@ Shader "DanbaidongRP/PBRToon/Base_cus"
                         float3 H = normalize(lightDirWS + viewDirWS);
                         float GF2NdotH = saturate(dot(normalWS, H));
 
-                        float3 gf2Specular = GF2_Specular(GF2NdotH, _SpecularColor.rgb, _SpecularIntensity, _SpecularThreshold, _UseRampMap > 0.5, _SpecularRampY, UV);               
+                        //float3 gf2Specular = GF2_Specular(GF2NdotH, _SpecularColor.rgb, _SpecularIntensity, _SpecularThreshold, _UseRampMap > 0.5, _SpecularRampY, UV);               
                         float3 gf2Rim = GF2_Rim(normalWS, viewDirWS, _RimIntensity, _RimThreshold, _UseRampMap > 0.5, _RimRampY, _RimSoftPower, _RimColor.rgb);
                 
                         // ===== 累加 =====
                         directLighting.diffuse += gf2Diffuse * dirLight.lightColor * directOcclusion * shadowRamp;
-                        directLighting.specular += gf2Specular * 0.1 * dirLight.lightColor * directOcclusion * shadowRamp;
+                        directLighting.specular += specTerm * clampedNdotL * shadowScene * dirLight.lightColor * directOcclusion;
                         rimColor += gf2Rim * dirLight.lightColor;
                     }
                 }
