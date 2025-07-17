@@ -154,12 +154,12 @@ Material:
     - _QueueOffset: 0
     - _RampColorY: 0.625
     - _ReceiveShadows: 1
-    - _RimIntensity: 0.2
+    - _RimIntensity: 2
     - _RimRampIntensity: 3
     - _RimRampY: 0.675
     - _RimSoftIntensity: 0.58
     - _RimSoftPower: 1.5
-    - _RimThreshold: 0
+    - _RimThreshold: 0.3
     - _SHADOW_RAMP: 0
     - _ShadowOffset: 0.5
     - _ShadowSmoothNdotL: 0.1

@@ -2,6 +2,9 @@ using UnityEngine;
 
 public class GridObjectSpawner : MonoBehaviour
 {
+    [Header("使用方法：右键组件标题栏 → 选择“生成网格”，即可自动生成。")]
+    [Space(5)]
+
     [Header("要复制的物体")]
     public GameObject objectToClone;
 
