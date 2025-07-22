@@ -143,7 +143,7 @@ MonoBehaviour:
     m_OverrideState: 1
     m_Value:
       serializedVersion: 2
-      m_Bits: 64
+      m_Bits: 0
   intensity:
     m_OverrideState: 1
     m_Value: 0.5

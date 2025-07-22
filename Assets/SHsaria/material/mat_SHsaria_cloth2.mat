@@ -165,7 +165,7 @@ Material:
     - _ShadowSmoothNdotL: 0.1
     - _ShadowSmoothScene: 0.1
     - _ShadowStrength: 0.7
-    - _Smoothness: 0.5
+    - _Smoothness: 0.7
     - _SmoothnessTextureChannel: 0
     - _SpecularArea: 0.15
     - _SpecularHighlights: 1

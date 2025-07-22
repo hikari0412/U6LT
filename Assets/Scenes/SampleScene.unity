@@ -4211,7 +4211,7 @@ RectTransform:
   m_Father: {fileID: 2045764436}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -21147,8 +21147,8 @@ MonoBehaviour:
   CosinusAdd: 0
   FixedCycle: 0
   WavingSpeed: 1
-  WavingRange: 1.5
-  WavingAxis: {x: 1, y: 1, z: 1}
+  WavingRange: 1
+  WavingAxis: {x: 1, y: 0.5, z: 1}
   WavingType: 1
   AlternateWave: 1
   UseWind: 0
@@ -21268,8 +21268,8 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   DeflectOnlyCollisions: 1
-  _Editor_Category: 2
-  _Editor_FeaturesCategory: 0
+  _Editor_Category: 3
+  _Editor_FeaturesCategory: 3
   DrawGizmos: 1
   StartBone: {fileID: 803828632}
   EndBone: {fileID: 0}
@@ -50302,7 +50302,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 97033277aeaa0de4f9d90512dc448e6e, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1609134956940688183, guid: 97033277aeaa0de4f9d90512dc448e6e, type: 3}
       propertyPath: m_Enabled
@@ -54094,7 +54094,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   openCloseEvents: 0
   openCloseWindow: 1
-  selectedToolbar: 0
+  selectedToolbar: 2
   actionTag: Action
   useRootMotion: 1
   debugMode: 0
@@ -61953,7 +61953,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 01d3e53d273032943aea91fcae79d03d, type: 3}
+  m_Sprite: {fileID: 21300000, guid: ea0d838cbf6720f4e8559bf42912aa62, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -71092,7 +71092,7 @@ RectTransform:
   m_Father: {fileID: 2129396049}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -79394,10 +79394,6 @@ PrefabInstance:
     - target: {fileID: 811863654213165209, guid: 931383139236bf443aa00740431e803d, type: 3}
       propertyPath: m_Name
       value: StrongholdSaria
-      objectReference: {fileID: 0}
-    - target: {fileID: 5208728284351822561, guid: 931383139236bf443aa00740431e803d, type: 3}
-      propertyPath: serializeData2.selectionData.maxConnectionDistance
-      value: 0.39751518
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
