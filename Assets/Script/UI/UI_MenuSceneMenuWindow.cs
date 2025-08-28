@@ -15,26 +15,34 @@ public class UI_MenuSceneMenuWindow : UI_WindowBase
     public override void Init()
     {
         startButton.onClick.AddListener(StartButtonClick);
-        continueButton.onClick.AddListener(ContinueButtonClick);
+        //continueButton.onClick.AddListener(ContinueButtonClick);
         quitButton.onClick.AddListener(quitButtonClick);
 
-        //TODO:如果当前没有存档，应该隐藏继续游戏按钮
+        //如果当前没有存档，应该隐藏继续游戏按钮
+        if (!DataManager.HaveArchive)
+        {
+            continueButton.gameObject.SetActive(false);
+        }
     }
 
     public void StartButtonClick()
     {
-        //使用当前存档进行游戏
         UISystem.Close<UI_MenuSceneMenuWindow>(true);
+
+        //创建存档进行游戏
+        GameManager.Instance.CreateNewArchiveAndEnterGame();
+        
     }
 
     public void ContinueButtonClick()
     {
-        //创建存档进行游戏-》进入自定义角色场景
         UISystem.Close<UI_MenuSceneMenuWindow>(true);
+        //使用存档进行游戏
     }
 
     public void quitButtonClick()
     {
+        //退出游戏
         Application.Quit();
     }
 
