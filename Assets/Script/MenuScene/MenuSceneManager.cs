@@ -5,15 +5,15 @@ using JKFrame;
 
 public class MenuSceneManager : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        // 打印已注册窗口Key（debug用）
         foreach (var key in JKFrame.UISystem.GetAllWindowKeys())
         {
             Debug.Log("已注册窗口Key: " + key);
         }
 
-        //UISystem.Show<UI_MenuSceneMenuWindow>();
+        // 打开菜单窗口
         UISystem.Show("UI_MenuSceneMenuWindow");
     }
 
