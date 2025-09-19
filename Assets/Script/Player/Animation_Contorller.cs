@@ -15,11 +15,21 @@ public class Animation_Contorller : MonoBehaviour
     private AnimationClipPlayable clipPlayable2;  // mixer input 1
 
     private bool isFirstPlay = true;
-    private bool currentIsClipPlayable1 = true;   // 当前“主通道”为 input0？
+    private bool currentIsClipPlayable1 = true;   // 当前“主通道”为 input0吗？
     private Coroutine transitionCoroutine;
 
-    private void Start()
+    public void Init()
     {
+        if (animator == null)
+        {
+            animator = GetComponent<Animator>();
+            if (animator == null)
+            {
+                Debug.LogError("[Animation_Contorller] 找不到 Animator。");
+                return;
+            }
+        }
+        
         // 创建图
         graph = PlayableGraph.Create("Animation_Contorller");
         graph.SetTimeUpdateMode(DirectorUpdateMode.GameTime);
@@ -38,6 +48,28 @@ public class Animation_Contorller : MonoBehaviour
     public void PlayAnimation(AnimationClip animationClip, float fixedTime = 0.25f)
     {
         if (animationClip == null) return;
+
+        // ★ 自检 Animator
+        if (animator == null)
+        {
+            animator = GetComponent<Animator>();
+            if (animator == null)
+            {
+                Debug.LogError("[Animation_Contorller] Animator 为 null，无法播放动画。");
+                return;
+            }
+        }
+
+        // ★ 自检 Graph：未创建则补一次 Init()
+        if (!graph.IsValid())
+        {
+            Init();
+            if (!graph.IsValid())
+            {
+                Debug.LogError("[Animation_Contorller] PlayableGraph 初始化失败。");
+                return;
+            }
+        }
 
         // 首次播放：接到 slot0，权重设满
         if (isFirstPlay)
@@ -75,7 +107,7 @@ public class Animation_Contorller : MonoBehaviour
                 return;
         }
 
-        // 确定源/目标通道
+        //确定源/目标通道
         //dst 就是 下一次新动画要接入的目标通道索引。它的值只会是 0 或 1，用来告诉 mixer 把新动画放到哪一边。
         //如果 fromSlot1为true则说明当前在播放clip1（索引号0），所以下一次新动画要接入的目标通道索引为1。
         //语法为fromSlot1为真时，dst=1，否则为0。
