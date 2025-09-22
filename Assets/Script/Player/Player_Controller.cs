@@ -61,6 +61,11 @@ public class Player_Controller : SingletonMono<Player_Controller>,IStateMachineO
             case PlayerState.Idle:
                 stateMachine.ChangeState<Player_IdleState>();
                 break;
+            case PlayerState.Move:
+                stateMachine.ChangeState<Player_MoveState>();
+                break;
+            default:
+                break;
         }
     }
 

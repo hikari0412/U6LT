@@ -8,5 +8,6 @@ using System.Threading.Tasks;
 /// </summary>
 public enum PlayerState
 {
-    Idle , 
+    Idle,
+    Move, 
 }
