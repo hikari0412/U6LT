@@ -4418,7 +4418,7 @@ GameObject:
   - component: {fileID: 444466267}
   m_Layer: 0
   m_Name: Camera
-  m_TagString: Untagged
+  m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -13649,18 +13649,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: StrongholdSaria
       objectReference: {fileID: 0}
-    - target: {fileID: 6659536881485611443, guid: 931383139236bf443aa00740431e803d, type: 3}
-      propertyPath: animationClip
-      value: 
-      objectReference: {fileID: 1827226128182048838, guid: 2ec858f1ebf7a86448110159d555607a, type: 3}
-    - target: {fileID: 6659536881485611443, guid: 931383139236bf443aa00740431e803d, type: 3}
-      propertyPath: animationClip1
-      value: 
-      objectReference: {fileID: 1827226128182048838, guid: 2a5178e7170299c48b856bedc7f41bab, type: 3}
-    - target: {fileID: 6659536881485611443, guid: 931383139236bf443aa00740431e803d, type: 3}
-      propertyPath: animationClip2
-      value: 
-      objectReference: {fileID: 1827226128182048838, guid: 2ec858f1ebf7a86448110159d555607a, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -15732,6 +15720,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2016061331}
   - component: {fileID: 2016061332}
+  - component: {fileID: 2016061333}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -15769,6 +15758,32 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   animation_Contorller: {fileID: 1621609060}
   shSariaConfig: {fileID: 11400000, guid: 3deab89d27b5dcb4da2c10fd06f482b6, type: 2}
+  modelTransform: {fileID: 1621609058}
+--- !u!143 &2016061333
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2016061330}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Height: 1.7
+  m_Radius: 0.3
+  m_SlopeLimit: 45
+  m_StepOffset: 0.3
+  m_SkinWidth: 0.0001
+  m_MinMoveDistance: 0.001
+  m_Center: {x: 0, y: 0.85, z: 0}
 --- !u!1 &2023142291
 GameObject:
   m_ObjectHideFlags: 0

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using JKFrame;
+using UnityEditor.ShaderGraph;
 using UnityEngine;
 
 /// <summary>
@@ -12,6 +13,9 @@ using UnityEngine;
 
 public class SHSariaConfig : ConfigBase
 {
+    public float walkSpeed;
+    public float rotateSpeed;
+    
     public Dictionary<string, AnimationClip> StandAnimationDic;
 
     public AnimationClip GetAnimationByName(string animationName)

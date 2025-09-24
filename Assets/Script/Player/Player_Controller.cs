@@ -3,11 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using JKFrame;
 using System.Runtime.CompilerServices;
+using UnityEditor.Rendering.LookDev;
 
 public class Player_Controller : SingletonMono<Player_Controller>,IStateMachineOwner
 {
     [SerializeField]Animation_Contorller animation_Contorller;
-    [SerializeField] private SHSariaConfig shSariaConfig;  
+    [SerializeField] private SHSariaConfig shSariaConfig;
+    public SHSariaConfig ShSariaConfig => shSariaConfig;// 方便外部访问配置
+
+    [SerializeField] private Transform modelTransform;//把模型部分拖进来，以防旋转等影响player controller
+    public Transform ModelTransform => modelTransform;
     private StateMachine stateMachine;
     private PlayerState playerState; // 玩家的当前状态标识
 

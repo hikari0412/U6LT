@@ -67,3 +67,5 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
+  walkSpeed: 3
+  rotateSpeed: 10
