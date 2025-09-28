@@ -1,22 +1,67 @@
-using UnityEngine;
-using UnityEngine.Playables;
-using UnityEngine.Animations;
 using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Animations;
+using UnityEngine.Playables;
 using Sirenix.OdinInspector;
+
+/// <summary>
+/// Animation_Contorller
+/// -------------------------------------------------------------------------
+/// 职责：
+/// 1. 初始化 PlayableGraph，并绑定到 Animator。
+/// 2. 管理主混合器（mixer），支持：
+///    - 普通动画播放（双通道，crossfade 淡入淡出）
+///    - Blend 动画播放（多通道混合，实时调整权重）
+/// 3. 提供过渡协程 TransitionAnimation，控制两个输入之间的权重平滑切换。
+/// 4. 提供 ResetBlend / SetBlendWeight 等工具方法，用于管理 blend 动画。
+///
+/// 主要结构：
+/// - Fields 区域：存储 Animator、PlayableGraph、mixer、clipPlayable、协程等引用
+/// - Init：初始化 graph 和 mixer，绑定 Animator
+/// - PlayAnimation：普通动画的播放与淡入淡出
+/// - TransitionAnimation：统一的过渡协程
+/// - PlayBlendAnimation：播放/切入 Blend 动画（mixer input 2）
+/// - Blend Utils：管理 blendMixer，重置、创建、设置权重
+/// - Lifecycle：在 OnDisable 时销毁 Graph
+///
+/// 使用方式示例：
+/// - PlayAnimation(idleClip, 1f, false, 0.25f);  // 普通 crossfade
+/// - PlayBlendAnimation(new List<AnimationClip>{ idle, walk }, 1f, 0.25f);
+///   SetBlendWeight(new List<float>{ 1f - t, t }); // 按速度实时混合 Idle/Walk
+///
+/// 注意事项：
+/// - Animator 必须挂在物体上
+/// - PlayableGraph 使用前必须先 Init()（首次调用 Play/Blend 方法会自动 Init）
+/// - Graph 的 input 数：0/1 = 普通双通道，2 = Blend 副混合器入口
+/// - 所有 if/for/while 都加了大括号，避免维护时出错
+/// -------------------------------------------------------------------------
+/// </summary>
+
 
 public class Animation_Contorller : MonoBehaviour
 {
+    #region Fields
+
     [SerializeField] private Animator animator;
 
     private PlayableGraph graph;
-    public AnimationMixerPlayable mixer;
+    public AnimationMixerPlayable mixer;                     // 主混合器（3路：0/1=普通双通道，2=Blend副混合器入口）
 
-    private AnimationClipPlayable clipPlayable1;  // mixer input 0
-    private AnimationClipPlayable clipPlayable2;  // mixer input 1
-
-    private bool isFirstPlay = true;
-    private bool currentIsClipPlayable1 = true;   // 当前“主通道”为 input0吗？
+    private AnimationClipPlayable clipPlayable1;             // mixer input 0
+    private AnimationClipPlayable clipPlayable2;             // mixer input 1
+    private bool currentIsClipPlayable1 = true;              // 当前主通道是不是 input0
     private Coroutine transitionCoroutine;
+
+    /*********************************** blend 模式相关 *******************************************/
+    public AnimationMixerPlayable blendMixer;                // 用于 blend 的副混合器（挂在 mixer input 2）
+    private bool currentIsBlend;                             // 当前是否处于 blend 模式（mixer 使用 input 2）
+    private readonly List<AnimationClipPlayable> blendClipPlayables = new List<AnimationClipPlayable>();
+    private int blendInputCount = 0;
+
+    #endregion
+
+    #region Init初始化
 
     public void Init()
     {
@@ -29,38 +74,46 @@ public class Animation_Contorller : MonoBehaviour
                 return;
             }
         }
-        
+
         // 创建图
         graph = PlayableGraph.Create("Animation_Contorller");
         graph.SetTimeUpdateMode(DirectorUpdateMode.GameTime);
 
-        // 创建混合器（2 输入）
-        mixer = AnimationMixerPlayable.Create(graph, 2);
+        // 主混合器：3 输入（0/1=普通，2=blend 副混合器入口）
+        mixer = AnimationMixerPlayable.Create(graph, 3);
+        mixer.SetInputWeight(0, 0f);
+        mixer.SetInputWeight(1, 0f);
+        mixer.SetInputWeight(2, 0f);
 
         // 绑定到 Animator
         var playableOutput = AnimationPlayableOutput.Create(graph, "Animation", animator);
         playableOutput.SetSourcePlayable(mixer);
     }
 
-    /// <summary>
-    /// 播放动画（fixedTime 为淡入淡出时长）
-    /// </summary>
-    public void PlayAnimation(AnimationClip animationClip, float fixedTime = 0.25f)
-    {
-        if (animationClip == null) return;
+    #endregion
 
-        // ★ 自检 Animator
+    #region Play Animation (普通动画播放/过渡)
+
+    /// <summary>
+    /// 播放单个动画（普通 crossfade 流程）
+    /// </summary>
+    public void PlayAnimation(AnimationClip animationClip, float speed = 1f, bool refreshAnimation = false, float transitionFixedTime = 0.25f)
+    {
+        if (animationClip == null)
+        {
+            return;
+        }
+
+        // 自检 Animator / Graph
         if (animator == null)
         {
             animator = GetComponent<Animator>();
-            if (animator == null)
-            {
-                Debug.LogError("[Animation_Contorller] Animator 为 null，无法播放动画。");
-                return;
-            }
         }
-
-        // ★ 自检 Graph：未创建则补一次 Init()
+        if (animator == null)
+        {
+            Debug.LogError("[Animation_Contorller] Animator 为 null，无法播放动画。");
+            return;
+        }
         if (!graph.IsValid())
         {
             Init();
@@ -72,139 +125,279 @@ public class Animation_Contorller : MonoBehaviour
         }
 
         // 首次播放：接到 slot0，权重设满
-        if (isFirstPlay)
+        if (!clipPlayable1.IsValid() && !clipPlayable2.IsValid() && !currentIsBlend)
         {
             clipPlayable1 = AnimationClipPlayable.Create(graph, animationClip);
+            clipPlayable1.SetSpeed(speed);
             graph.Connect(clipPlayable1, 0, mixer, 0);
 
             mixer.SetInputWeight(0, 1f);
             mixer.SetInputWeight(1, 0f);
+            mixer.SetInputWeight(2, 0f);
 
-            isFirstPlay = false;
             currentIsClipPlayable1 = true;
-
-            //如果 Graph 无效或者没有在播放，就启动 Graph，保证动画系统持续运作。
-            if (!graph.IsValid() || !graph.IsPlaying()) graph.Play();
+            if (!graph.IsPlaying())
+            {
+                graph.Play();
+            }
             return;
         }
 
-        // —— 去抖：当前主通道已经满权重并且正在播的是同一剪辑 → 直接返回 ——
-        if (currentIsClipPlayable1)
+        // 去抖：主通道已是同一剪辑且满权重 → 返回
+        if (!currentIsBlend)
         {
-            //如果clipPlayable1有效【clipPlayable1.IsValid()】
-            //且clipPlayable1的动画剪辑与传入的animationClip相同【clipPlayable1.GetAnimationClip() == animationClip】
-            //且此时动画完全是由 clipPlayable1 播放的，没有混合/过渡【mixer.GetInputWeight(0) >= 0.999f】，则直接返回
-            if (clipPlayable1.IsValid() &&
-                clipPlayable1.GetAnimationClip() == animationClip &&
-                mixer.GetInputWeight(0) >= 0.999f)
-                return;
-        }
-        else
-        {
-            if (clipPlayable2.IsValid() &&
-                clipPlayable2.GetAnimationClip() == animationClip &&
-                mixer.GetInputWeight(1) >= 0.999f)
-                return;
+            if (currentIsClipPlayable1)
+            {
+                if (clipPlayable1.IsValid() &&
+                    clipPlayable1.GetAnimationClip() == animationClip &&
+                    mixer.GetInputWeight(0) >= 0.999f)
+                {
+                    return;
+                }
+            }
+            else
+            {
+                if (clipPlayable2.IsValid() &&
+                    clipPlayable2.GetAnimationClip() == animationClip &&
+                    mixer.GetInputWeight(1) >= 0.999f)
+                {
+                    return;
+                }
+            }
         }
 
-        //确定源/目标通道
-        //dst 就是 下一次新动画要接入的目标通道索引。它的值只会是 0 或 1，用来告诉 mixer 把新动画放到哪一边。
-        //如果 fromSlot1为true则说明当前在播放clip1（索引号0），所以下一次新动画要接入的目标通道索引为1。
-        //语法为fromSlot1为真时，dst=1，否则为0。
-        bool fromSlot1 = currentIsClipPlayable1;      // 源：当前主通道
-        int dst = fromSlot1 ? 1 : 0;                  // 目标：另一侧
+        // 确定目标通道（普通模式：在 0 和 1 之间切换；若当前是 blend 模式，则从 2 过渡到该通道）
+        bool fromSlot1 = currentIsClipPlayable1;
+        int dst = fromSlot1 ? 1 : 0;               // 目标通道
+        int fromIndex = currentIsBlend ? 2 : (fromSlot1 ? 0 : 1);
 
         // 将目标通道接上新动画，并把其初始权重设为 0
         if (mixer.GetInput(dst).IsValid())
+        {
             graph.Disconnect(mixer, dst);
+        }
 
         var newPlayable = AnimationClipPlayable.Create(graph, animationClip);
+        newPlayable.SetSpeed(speed);
         graph.Connect(newPlayable, 0, mixer, dst);
         mixer.SetInputWeight(dst, 0f);
-
-        if (dst == 0) clipPlayable1 = newPlayable; else clipPlayable2 = newPlayable;
+        if (dst == 0)
+        {
+            clipPlayable1 = newPlayable;
+        }
+        else
+        {
+            clipPlayable2 = newPlayable;
+        }
 
         // 停掉旧的过渡协程
-        if (transitionCoroutine != null) StopCoroutine(transitionCoroutine);
+        if (transitionCoroutine != null)
+        {
+            StopCoroutine(transitionCoroutine);
+        }
 
-        // 读取当前起始权重（可能是 1，也可能是被打断的 0.x）
-        float startW = mixer.GetInputWeight(fromSlot1 ? 0 : 1);
-        startW = Mathf.Clamp01(startW);
+        // 读当前源权重（若是从 blend 来，则源=2）
+        float startWeight = Mathf.Clamp01(mixer.GetInputWeight(fromIndex));
 
         // 先对齐双方权重和为 1（避免第一帧跳变）
-        if (fromSlot1)
-        {
-            mixer.SetInputWeight(0, startW);
-            mixer.SetInputWeight(1, 1f - startW);
-        }
-        else
-        {
-            mixer.SetInputWeight(1, startW);
-            mixer.SetInputWeight(0, 1f - startW);
-        }
+        mixer.SetInputWeight(fromIndex, startWeight);
+        mixer.SetInputWeight(dst, 1f - startWeight);
 
-        // 如果过渡时长 <= 0，直接硬切
-        if (fixedTime <= 0f)
-        {
-            if (fromSlot1)
-            {
-                mixer.SetInputWeight(0, 0f);
-                mixer.SetInputWeight(1, 1f);
-            }
-            else
-            {
-                mixer.SetInputWeight(1, 0f);
-                mixer.SetInputWeight(0, 1f);
-            }
-            currentIsClipPlayable1 = !fromSlot1;
-        }
-        else
-        {
-            // 启动新的过渡：从 startW → 0，另一侧从 (1 - startW) → 1
-            transitionCoroutine = StartCoroutine(CrossFadeFrom(startW, fixedTime, fromSlot1));
-        }
+        // 过渡（把 fromIndex → 0，toIndex → 1）
+        transitionCoroutine = StartCoroutine(TransitionAnimation(fromIndex, dst, transitionFixedTime));
 
-        if (!graph.IsPlaying()) graph.Play();
+        // 状态标记更新（立刻退出 blend 标志，主通道标记在协程结尾也会被矫正）
+        currentIsBlend = false;
+
+        if (!graph.IsPlaying())
+        {
+            graph.Play();
+        }
     }
 
+    #endregion
+
+    #region Transition 协程
+
     /// <summary>
-    /// 从当前权重 startW 做 crossfade：源通道从 startW→0，目标从 (1-startW)→1
+    /// 统一的过渡协程：在主混合器的 fromIndex → toIndex 之间做权重过渡；fixedTime<=0 为硬切
     /// </summary>
-    private IEnumerator CrossFadeFrom(float startW, float duration, bool fromSlot1)
+    private IEnumerator TransitionAnimation(int fromIndex, int toIndex, float fixedTime)
     {
-        startW = Mathf.Clamp01(startW);
-        duration = Mathf.Max(0.0001f, duration);
-
-        float w = startW;
-        float speed = startW / duration; // 用时 duration 将 w 从 startW 降到 0
-
-        while (w > 0f)
+        // 若时长<=0，硬切
+        if (fixedTime <= 0f)
         {
-            w = Mathf.Max(0f, w - Time.deltaTime * speed);
-
-            if (fromSlot1)
+            mixer.SetInputWeight(fromIndex, 0f);
+            mixer.SetInputWeight(toIndex, 1f);
+        }
+        else
+        {
+            float start = Mathf.Clamp01(mixer.GetInputWeight(fromIndex));
+            float t = 0f;
+            while (t < fixedTime)
             {
-                mixer.SetInputWeight(0, w);
-                mixer.SetInputWeight(1, 1f - w);
+                t += Time.deltaTime;
+                float w = Mathf.Lerp(start, 0f, Mathf.InverseLerp(0f, fixedTime, t));
+                mixer.SetInputWeight(fromIndex, w);
+                mixer.SetInputWeight(toIndex, 1f - w);
+                yield return null;
             }
-            else
-            {
-                mixer.SetInputWeight(1, w);
-                mixer.SetInputWeight(0, 1f - w);
-            }
-
-            yield return null;
+            mixer.SetInputWeight(fromIndex, 0f);
+            mixer.SetInputWeight(toIndex, 1f);
         }
 
-        // 过渡完成后，再更新“当前主通道”标记
-        currentIsClipPlayable1 = !fromSlot1;
+        // 过渡完成后矫正“当前主通道”标记
+        if (toIndex == 0 || toIndex == 1)
+        {
+            currentIsClipPlayable1 = (toIndex == 0);
+        }
+
+        // 若切到了 blend（toIndex==2），标记处于 blend 模式
+        currentIsBlend = (toIndex == 2);
         transitionCoroutine = null;
     }
 
+    #endregion
+
+    #region Play Blend Animation播放/切入 Blend 动画
+
+    /// <summary>
+    /// 播放（或切入）Blend 动画：clips 会被挂到 blendMixer（mixer 的 input 2），并过渡过去
+    /// </summary>
+    public void PlayBlendAnimation(List<AnimationClip> clips, float speed = 1f, float transitionFixedTime = 0.25f)
+    {
+        if (clips == null || clips.Count == 0)
+        {
+            return;
+        }
+
+        // 确保图与主混合器
+        if (animator == null)
+        {
+            animator = GetComponent<Animator>();
+        }
+        if (animator == null)
+        {
+            Debug.LogError("[Animation_Contorller] Animator 为 null。");
+            return;
+        }
+        if (!graph.IsValid())
+        {
+            Init();
+            if (!graph.IsValid())
+            {
+                Debug.LogError("[Animation_Contorller] Graph 初始化失败。");
+                return;
+            }
+        }
+
+        // 初始化/重置 blend 副混合器并连接到 mixer 的 input 2
+        ResetBlend(clips.Count);
+
+        // 把 clips 装到 blendMixer
+        for (int i = 0; i < clips.Count; i++)
+        {
+            CreateAndConnectBlendPlayable(clips[i], i, speed);
+            // 初始：第0路权重=1，其它=0（可在外部 SetBlendWeight 再调整）
+            blendMixer.SetInputWeight(i, i == 0 ? 1f : 0f);
+        }
+
+        // 停掉旧的过渡
+        if (transitionCoroutine != null)
+        {
+            StopCoroutine(transitionCoroutine);
+        }
+
+        // 从当前（0/1/或已在2）过渡到 2
+        int fromIndex =
+            currentIsBlend ? 2 :
+            (currentIsClipPlayable1 ? 0 : 1);
+
+        // 对齐初始相对权重，避免第一帧跳变
+        float start = Mathf.Clamp01(mixer.GetInputWeight(fromIndex));
+        mixer.SetInputWeight(fromIndex, start);
+        mixer.SetInputWeight(2, 1f - start);
+
+        transitionCoroutine = StartCoroutine(TransitionAnimation(fromIndex, 2, transitionFixedTime));
+
+        if (!graph.IsPlaying())
+        {
+            graph.Play();
+        }
+    }
+
+    #endregion
+
+    #region Blend Utils管理 blendMixer
+
+    /// <summary>
+    /// 初始化/重置 blend 副混合器（输入数量=animationCount），并接到主混合器的 input 2
+    /// </summary>
+    private void ResetBlend(int animationCount)
+    {
+        // 清理旧的 blendMixer 连接
+        if (mixer.GetInputCount() < 3)
+        {
+            // 重新创建 3 路主混合器（极端情况）
+            var newMixer = AnimationMixerPlayable.Create(graph, 3);
+            graph.Connect(mixer, 0, newMixer, 0); // ⚠️ TODO: 迁移逻辑未做，正常不会走到这里
+            mixer = newMixer;
+        }
+
+        if (mixer.GetInput(2).IsValid())
+        {
+            graph.Disconnect(mixer, 2);
+        }
+
+        // 创建新的 blendMixer
+        blendMixer = AnimationMixerPlayable.Create(graph, animationCount);
+        graph.Connect(blendMixer, 0, mixer, 2);
+        mixer.SetInputWeight(2, 0f);
+
+        // 清空列表并记录输入数
+        blendClipPlayables.Clear();
+        blendInputCount = animationCount;
+    }
+
+    /// <summary>
+    /// 将 clip 放入 blendMixer 的指定路（index），并设置播放速度
+    /// </summary>
+    private AnimationClipPlayable CreateAndConnectBlendPlayable(AnimationClip clip, int index, float speed)
+    {
+        var clipPlayable = AnimationClipPlayable.Create(graph, clip);
+        clipPlayable.SetSpeed(speed);
+        blendClipPlayables.Add(clipPlayable);
+        graph.Connect(clipPlayable, 0, blendMixer, index);
+        return clipPlayable;
+    }
+
+    /// <summary>
+    /// 设置 blendMixer 的各路权重（长度取 min）
+    /// </summary>
+    public void SetBlendWeight(List<float> weightList)
+    {
+        if (!blendMixer.IsValid())
+        {
+            return;
+        }
+        int n = Mathf.Min(weightList.Count, blendInputCount);
+        for (int i = 0; i < n; i++)
+        {
+            blendMixer.SetInputWeight(i, weightList[i]);
+        }
+    }
+
+    #endregion
+
+    #region Lifecycle
+
     private void OnDisable()
     {
-        // 当脚本被禁用时，销毁 PlayableGraph
         if (graph.IsValid())
+        {
             graph.Destroy();
+        }
     }
+
+    #endregion
 }

@@ -78,7 +78,7 @@ public class Player_Controller : SingletonMono<Player_Controller>,IStateMachineO
     /// 播放动画
     /// </summary>
     /// <param name="animationClipName"></param>
-    public void PlayAnimation(string animationClipName , float fixedTime = 0.25f)
+    public void PlayAnimation(string animationClipName , float speed = 1 , bool refreshAnimation = false, float transitionFixedTime = 0.25f)
     {
         if (shSariaConfig == null)
         {
@@ -93,7 +93,7 @@ public class Player_Controller : SingletonMono<Player_Controller>,IStateMachineO
             return;
         }
 
-        animation_Contorller.PlayAnimation(clip, fixedTime);
+        animation_Contorller.PlayAnimation(clip, speed, refreshAnimation, transitionFixedTime);
     }
 
 }
