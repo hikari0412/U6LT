@@ -326,6 +326,69 @@ public class Animation_Contorller : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 播放（或切入）Blend 动画（仅两个blend）：clips 会被挂到 blendMixer（mixer 的 input 2），并过渡过去
+    /// </summary>
+    public void PlayBlendAnimation(AnimationClip clip1, AnimationClip clip2, float speed = 1f, float transitionFixedTime = 0.25f)
+    {
+        if (clip1 == null || clip2 == null)
+        {
+            return;
+        }
+
+        // 确保图与主混合器
+        if (animator == null)
+        {
+            animator = GetComponent<Animator>();
+        }
+        if (animator == null)
+        {
+            Debug.LogError("[Animation_Contorller] Animator 为 null。");
+            return;
+        }
+        if (!graph.IsValid())
+        {
+            Init();
+            if (!graph.IsValid())
+            {
+                Debug.LogError("[Animation_Contorller] Graph 初始化失败。");
+                return;
+            }
+        }
+
+        // 初始化/重置 blend 副混合器并连接到 mixer 的 input 2
+        ResetBlend(2);
+
+        // 把 clip1和2 装到 blendMixer
+        CreateAndConnectBlendPlayable(clip1, 0, speed);
+        CreateAndConnectBlendPlayable(clip2, 1, speed);
+        // 初始：第0路权重=1，其它=0（可在外部 SetBlendWeight 再调整）
+        blendMixer.SetInputWeight(0, 1);
+
+        // 停掉旧的过渡
+        if (transitionCoroutine != null)
+        {
+            StopCoroutine(transitionCoroutine);
+        }
+
+        // 从当前（0/1/或已在2）过渡到 2
+        int fromIndex =
+            currentIsBlend ? 2 :
+            (currentIsClipPlayable1 ? 0 : 1);
+
+        // 对齐初始相对权重，避免第一帧跳变
+        float start = Mathf.Clamp01(mixer.GetInputWeight(fromIndex));
+        mixer.SetInputWeight(fromIndex, start);
+        mixer.SetInputWeight(2, 1f - start);
+
+        transitionCoroutine = StartCoroutine(TransitionAnimation(fromIndex, 2, transitionFixedTime));
+
+        if (!graph.IsPlaying())
+        {
+            graph.Play();
+        }
+    }
+
     #endregion
 
     #region Blend Utils管理 blendMixer
@@ -385,6 +448,15 @@ public class Animation_Contorller : MonoBehaviour
         {
             blendMixer.SetInputWeight(i, weightList[i]);
         }
+    }
+
+    /// <summary>
+    /// 设置 blendMixer 的权重（仅2个动画的情况）
+    /// </summary>
+        public void SetBlendWeight(float clip1Weight)
+    {
+        blendMixer.SetInputWeight(0, clip1Weight);
+        blendMixer.SetInputWeight(1, 1-clip1Weight);
     }
 
     #endregion

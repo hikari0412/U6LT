@@ -96,4 +96,42 @@ public class Player_Controller : SingletonMono<Player_Controller>,IStateMachineO
         animation_Contorller.PlayAnimation(clip, speed, refreshAnimation, transitionFixedTime);
     }
 
+    /// <summary>
+    /// 播放blend动画
+    /// </summary>
+        public void PlayBlendAnimation(string clip1Name, string clip2Name, float speed = 1f, float transitionFixedTime = 0.25f)
+    {
+        if (shSariaConfig == null)
+        {
+            Debug.LogWarning("[Player_Controller] shSariaConfig 为 null，无法根据名字获取动画。");
+            return;
+        }
+
+        AnimationClip clip1 = shSariaConfig.GetAnimationByName(clip1Name);
+        AnimationClip clip2 = shSariaConfig.GetAnimationByName(clip2Name);
+
+        if (clip1 == null)
+        {
+            Debug.LogWarning($"[Player_Controller] 配置中找不到名为 \"{clip1Name}\" 的 AnimationClip。");
+            return;
+        }
+
+        if (clip2 == null)
+        {
+            Debug.LogWarning($"[Player_Controller] 配置中找不到名为 \"{clip2Name}\" 的 AnimationClip。");
+            return;
+        }
+
+        animation_Contorller.PlayBlendAnimation(clip1, clip2, speed, transitionFixedTime);
+    }
+
+    /// <summary>
+    /// 设置blend动画的权重
+    /// </summary>
+    /// <param name="clip1Weight"></param>
+        public void SetBlendWeight(float clip1Weight)
+    {
+        animation_Contorller.SetBlendWeight(clip1Weight);
+    }
+
 }

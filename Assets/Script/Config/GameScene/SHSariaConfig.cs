@@ -14,6 +14,7 @@ using UnityEngine;
 public class SHSariaConfig : ConfigBase
 {
     public float walkSpeed;
+    public float runSpeed;
     public float rotateSpeed;
     
     public Dictionary<string, AnimationClip> StandAnimationDic;
