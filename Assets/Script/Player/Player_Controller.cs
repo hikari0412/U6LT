@@ -5,9 +5,34 @@ using JKFrame;
 using System.Runtime.CompilerServices;
 using UnityEditor.Rendering.LookDev;
 
-public class Player_Controller : SingletonMono<Player_Controller>,IStateMachineOwner
+/// <summary>
+/// Player_Controller
+/// -------------------------------------------------------------------------
+/// 职责：
+/// - 作为玩家的中枢控制器，协调动画、状态机和配置。
+/// - 初始化 Animation_Contorller 和状态机（StateMachine）。
+/// - 提供外部接口：播放单动画、播放 Blend 动画、设置 Blend 权重。
+/// - 对状态机进行状态切换（Idle、Move等）。
+/// - 提供相位锁接口：Enable / Update / Disable，用于步频同步。
+///
+/// 主要结构：
+/// - Awake：自动补齐 Animation_Contorller 引用。
+/// - Start/Init：初始化动画控制器、状态机，并进入默认状态 Idle。
+/// - ChangeState：封装状态切换逻辑，基于 PlayerState 枚举。
+/// - PlayAnimation / PlayBlendAnimation：通过配置获取 AnimationClip 并播放。
+/// - SetBlendWeight：传递权重到 Animation_Contorller。
+/// - 相位锁接口：对 Animation_Contorller 的 Enable/Update/Disable 封装。
+///
+/// 注意事项：
+/// - Animation_Contorller 必须在 Player 的子物体上存在，否则无法初始化。
+/// - shSariaConfig 需在 Inspector 赋值，否则无法根据名字找到动画。
+/// - modelTransform 必须正确拖入，用于控制角色外观部分旋转。
+/// -------------------------------------------------------------------------
+/// </summary>
+
+public class Player_Controller : SingletonMono<Player_Controller>, IStateMachineOwner
 {
-    [SerializeField]Animation_Contorller animation_Contorller;
+    [SerializeField] Animation_Contorller animation_Contorller;
     [SerializeField] private SHSariaConfig shSariaConfig;
     public SHSariaConfig ShSariaConfig => shSariaConfig;// 方便外部访问配置
 
@@ -78,7 +103,7 @@ public class Player_Controller : SingletonMono<Player_Controller>,IStateMachineO
     /// 播放动画
     /// </summary>
     /// <param name="animationClipName"></param>
-    public void PlayAnimation(string animationClipName , float speed = 1 , bool refreshAnimation = false, float transitionFixedTime = 0.25f)
+    public void PlayAnimation(string animationClipName, float speed = 1, bool refreshAnimation = false, float transitionFixedTime = 0.25f)
     {
         if (shSariaConfig == null)
         {
@@ -99,7 +124,7 @@ public class Player_Controller : SingletonMono<Player_Controller>,IStateMachineO
     /// <summary>
     /// 播放blend动画
     /// </summary>
-        public void PlayBlendAnimation(string clip1Name, string clip2Name, float speed = 1f, float transitionFixedTime = 0.25f)
+    public void PlayBlendAnimation(string clip1Name, string clip2Name, float speed = 1f, float transitionFixedTime = 0.25f)
     {
         if (shSariaConfig == null)
         {
@@ -129,9 +154,28 @@ public class Player_Controller : SingletonMono<Player_Controller>,IStateMachineO
     /// 设置blend动画的权重
     /// </summary>
     /// <param name="clip1Weight"></param>
-        public void SetBlendWeight(float clip1Weight)
+    public void SetBlendWeight(float clip1Weight)
     {
         animation_Contorller.SetBlendWeight(clip1Weight);
     }
+
+    /// <summary>启用 Walk/Run 的相位锁（可选初相位）。</summary>
+    public void EnableBlendPhaseLock(float? initPhase01 = null)
+    {
+        animation_Contorller.EnablePhaseLock(initPhase01);
+    }
+
+    /// <summary>按当前 Walk 权重推进相位（每帧调用）。</summary>
+    public void UpdateBlendPhaseLock(float walkWeight)
+    {
+        animation_Contorller.UpdatePhaseLock(walkWeight);
+    }
+
+    /// <summary>关闭相位锁，恢复自动播放速度（默认1,1；如需自定义可传参）。</summary>
+    public void DisableBlendPhaseLock(float speed0 = 1f, float speed1 = 1f)
+    {
+        animation_Contorller.DisablePhaseLock(speed0, speed1);
+    }
+
 
 }

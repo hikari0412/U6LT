@@ -9,35 +9,39 @@ using Sirenix.OdinInspector;
 /// Animation_Contorller
 /// -------------------------------------------------------------------------
 /// 职责：
-/// 1. 初始化 PlayableGraph，并绑定到 Animator。
-/// 2. 管理主混合器（mixer），支持：
-///    - 普通动画播放（双通道，crossfade 淡入淡出）
-///    - Blend 动画播放（多通道混合，实时调整权重）
-/// 3. 提供过渡协程 TransitionAnimation，控制两个输入之间的权重平滑切换。
-/// 4. 提供 ResetBlend / SetBlendWeight 等工具方法，用于管理 blend 动画。
+/// - 管理基于 PlayableGraph 的动画播放与切换。
+/// - 支持单动画播放（AnimationClipPlayable）。
+/// - 支持 Blend 混合播放（AnimationMixerPlayable），用于多动画之间的插值。
+/// - 处理过渡：通过 CrossFade 在两个动画或混合之间平滑切换。
+/// - 对外提供统一接口：PlayAnimation、PlayBlendAnimation、SetBlendWeight。
+///
+/// Blend 模式：
+/// - 双动画 Blend：典型用于 Walk / Run 混合，根据权重平滑过渡。  
+/// - 多动画 Blend（2~10 路）：可扩展用于 Idle / Walk / Jog / Run / Sprint 或不同动作的连续过渡。  
+///   - 内部使用 AnimationMixerPlayable 动态连接多个 AnimationClipPlayable。  
+///   - 权重通过 SetBlendWeight(List<float>) 传入，每个通道权重可独立设置。  
+///   - 总权重不强制归一化，用户需在调用端自行控制合理性。  
+///
+/// 新增功能：相位锁（Phase Lock）
+/// - 用一个统一的归一化相位（0..1）驱动多条 Blend 动画的播放时间。  
+/// - Walk 与 Run 等长度不一致的循环动画可保持脚步相位同步，避免“单脚卡住”。  
+/// - 接口：EnablePhaseLock、UpdatePhaseLock、DisablePhaseLock。  
+///   - EnablePhaseLock：停止自动播放，初始化相位（可选指定初始值）。  
+///   - UpdatePhaseLock：每帧按混合权重计算周期，推进相位并同步到所有轨道。  
+///   - DisablePhaseLock：恢复自由播放速度。  
 ///
 /// 主要结构：
-/// - Fields 区域：存储 Animator、PlayableGraph、mixer、clipPlayable、协程等引用
-/// - Init：初始化 graph 和 mixer，绑定 Animator
-/// - PlayAnimation：普通动画的播放与淡入淡出
-/// - TransitionAnimation：统一的过渡协程
-/// - PlayBlendAnimation：播放/切入 Blend 动画（mixer input 2）
-/// - Blend Utils：管理 blendMixer，重置、创建、设置权重
-/// - Lifecycle：在 OnDisable 时销毁 Graph
-///
-/// 使用方式示例：
-/// - PlayAnimation(idleClip, 1f, false, 0.25f);  // 普通 crossfade
-/// - PlayBlendAnimation(new List<AnimationClip>{ idle, walk }, 1f, 0.25f);
-///   SetBlendWeight(new List<float>{ 1f - t, t }); // 按速度实时混合 Idle/Walk
+/// - 初始化：创建 Graph、PlayableOutput，持有 Mixer 与 ClipPlayable。  
+/// - PlayAnimation：播放单一动画，支持 CrossFade。  
+/// - PlayBlendAnimation：播放多路动画（2~10），并管理权重。  
+/// - SetBlendWeight：更新 BlendMixer 的输入权重。  
+/// - 相位锁方法：Enable/Update/DisablePhaseLock，内部用 phase01 驱动时间。  
 ///
 /// 注意事项：
-/// - Animator 必须挂在物体上
-/// - PlayableGraph 使用前必须先 Init()（首次调用 Play/Blend 方法会自动 Init）
-/// - Graph 的 input 数：0/1 = 普通双通道，2 = Blend 副混合器入口
-/// - 所有 if/for/while 都加了大括号，避免维护时出错
+/// - 相位锁启用后，Blend 动画的 speed 会被强制置零，由相位推进 SetTime 驱动。  
+/// - 退出状态时务必调用 DisablePhaseLock，否则其它状态动画也会被锁定。  
 /// -------------------------------------------------------------------------
 /// </summary>
-
 
 public class Animation_Contorller : MonoBehaviour
 {
@@ -58,6 +62,10 @@ public class Animation_Contorller : MonoBehaviour
     private bool currentIsBlend;                             // 当前是否处于 blend 模式（mixer 使用 input 2）
     private readonly List<AnimationClipPlayable> blendClipPlayables = new List<AnimationClipPlayable>();
     private int blendInputCount = 0;
+
+    // —— 相位锁（Phase Lock）——
+    private bool phaseLockEnabled = false;   // 是否启用归一化相位锁
+    private double phase01 = 0.0;            // 0..1 的归一化相位（左脚着地→左脚着地）
 
     #endregion
 
@@ -453,10 +461,109 @@ public class Animation_Contorller : MonoBehaviour
     /// <summary>
     /// 设置 blendMixer 的权重（仅2个动画的情况）
     /// </summary>
-        public void SetBlendWeight(float clip1Weight)
+    public void SetBlendWeight(float clip1Weight)
     {
         blendMixer.SetInputWeight(0, clip1Weight);
-        blendMixer.SetInputWeight(1, 1-clip1Weight);
+        blendMixer.SetInputWeight(1, 1 - clip1Weight);
+    }
+
+    /// <summary>
+    /// 启用相位锁：暂停两条 Blend 轨的自动播放（speed=0），用统一相位驱动 SetTime()。
+    /// 可选 initialPhase01（0..1）。若不传，则以通道0当前相位为基准。
+    /// </summary>
+    public void EnablePhaseLock(float? initialPhase01 = null)
+    {
+        if (!blendMixer.IsValid() || blendClipPlayables.Count < 2)
+        {
+            Debug.LogWarning("[Animation_Contorller] EnablePhaseLock 需要已建立的两条 blend 轨（索引0/1）。");
+            return;
+        }
+
+        var p0 = blendClipPlayables[0];
+        var p1 = blendClipPlayables[1];
+        if (!p0.IsValid() || !p1.IsValid()) return;
+
+        // 初始相位：外部给，或由通道0当前时间反推
+        if (initialPhase01.HasValue)
+        {
+            phase01 = Mathf.Repeat(initialPhase01.Value, 1f);
+        }
+        else
+        {
+            var c0 = p0.GetAnimationClip();
+            double t0 = p0.GetTime();
+            phase01 = (c0 != null && c0.length > 0f) ? ((t0 % c0.length) / c0.length) : 0.0;
+        }
+
+        // 停止自动前进：相位由我们来驱动
+        p0.SetSpeed(0);
+        p1.SetSpeed(0);
+
+        phaseLockEnabled = true;
+        ApplyPhaseToBlendClips(); // 立刻对齐一次
+    }
+
+    /// <summary>
+    /// 关闭相位锁，恢复两条轨的自动播放（你可指定恢复速度，默认1,1）。
+    /// </summary>
+    public void DisablePhaseLock(float speed0 = 1f, float speed1 = 1f)
+    {
+        if (blendMixer.IsValid() && blendClipPlayables.Count >= 2)
+        {
+            var p0 = blendClipPlayables[0];
+            var p1 = blendClipPlayables[1];
+            if (p0.IsValid()) { p0.SetSpeed(speed0); }
+            if (p1.IsValid()) { p1.SetSpeed(speed1); }
+        }
+        phaseLockEnabled = false;
+    }
+
+    /// <summary>
+    /// 将当前 phase01 同步到两条 Blend 轨（按各自长度映射绝对时间）
+    /// </summary>
+    private void ApplyPhaseToBlendClips()
+    {
+        if (!blendMixer.IsValid() || blendClipPlayables.Count < 2) return;
+
+        var p0 = blendClipPlayables[0];
+        var p1 = blendClipPlayables[1];
+        if (!p0.IsValid() || !p1.IsValid()) return;
+
+        var c0 = p0.GetAnimationClip();
+        var c1 = p1.GetAnimationClip();
+        if (c0 == null || c1 == null) return;
+
+        double t0 = phase01 * c0.length;
+        double t1 = phase01 * c1.length;
+
+        p0.SetTime(t0);
+        p1.SetTime(t1);
+        // 提示：不需要手动 Evaluate，图在本帧更新时会生效
+    }
+
+    /// <summary>
+    /// 每帧推进相位：mixedLength = walkWeight * len0 + (1-walkWeight) * len1
+    /// phase01 += dt / mixedLength （保持步频平滑过渡）
+    /// </summary>
+    public void UpdatePhaseLock(float walkWeight)
+    {
+        if (!phaseLockEnabled) return;
+        if (!blendMixer.IsValid() || blendClipPlayables.Count < 2) return;
+
+        var c0 = blendClipPlayables[0].GetAnimationClip(); // Walk
+        var c1 = blendClipPlayables[1].GetAnimationClip(); // Run
+        if (c0 == null || c1 == null) return;
+
+        float len0 = Mathf.Max(0.0001f, c0.length);
+        float len1 = Mathf.Max(0.0001f, c1.length);
+
+        walkWeight = Mathf.Clamp01(walkWeight);
+        float runWeight = 1f - walkWeight;
+
+        float mixedLength = walkWeight * len0 + runWeight * len1; // 混合周期
+        phase01 = (phase01 + Time.deltaTime / mixedLength) % 1.0;
+
+        ApplyPhaseToBlendClips();
     }
 
     #endregion
