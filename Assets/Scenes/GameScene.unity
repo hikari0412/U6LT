@@ -13659,15 +13659,15 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4364089188776483, guid: 931383139236bf443aa00740431e803d, type: 3}
   m_PrefabInstance: {fileID: 1621609057}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1621609060 stripped
+--- !u!114 &1621609064 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6659536881485611443, guid: 931383139236bf443aa00740431e803d, type: 3}
+  m_CorrespondingSourceObject: {fileID: 5389154346580249867, guid: 931383139236bf443aa00740431e803d, type: 3}
   m_PrefabInstance: {fileID: 1621609057}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c81b4fe40222de54194c963eb4a15f71, type: 3}
+  m_Script: {fileID: 11500000, guid: b3ab7c614d05e754a8a726f137075366, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1623296668
@@ -15756,7 +15756,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26bc7826251a3b54482054150991de0c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animation_Contorller: {fileID: 1621609060}
+  animation_Contorller: {fileID: 1621609064}
   shSariaConfig: {fileID: 11400000, guid: 3deab89d27b5dcb4da2c10fd06f482b6, type: 2}
   modelTransform: {fileID: 1621609058}
 --- !u!143 &2016061333

@@ -118,7 +118,7 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
             return;
         }
 
-        animation_Contorller.PlayAnimation(clip, speed, refreshAnimation, transitionFixedTime);
+        animation_Contorller.PlaySingleAnimation(clip, speed, refreshAnimation, transitionFixedTime);
     }
 
     /// <summary>
@@ -159,23 +159,13 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
         animation_Contorller.SetBlendWeight(clip1Weight);
     }
 
+
     /// <summary>启用 Walk/Run 的相位锁（可选初相位）。</summary>
-    public void EnableBlendPhaseLock(float? initPhase01 = null)
-    {
-        animation_Contorller.EnablePhaseLock(initPhase01);
-    }
-
+    public void EnableBlendPhaseLock(float? initPhase01 = null) => animation_Contorller.EnablePhaseLockForWalkRun(initPhase01);
+    
     /// <summary>按当前 Walk 权重推进相位（每帧调用）。</summary>
-    public void UpdateBlendPhaseLock(float walkWeight)
-    {
-        animation_Contorller.UpdatePhaseLock(walkWeight);
-    }
-
+    public void UpdateBlendPhaseLock(float walkWeight)        => animation_Contorller.UpdatePhaseLockForWalkRun(walkWeight);
+    
     /// <summary>关闭相位锁，恢复自动播放速度（默认1,1；如需自定义可传参）。</summary>
-    public void DisableBlendPhaseLock(float speed0 = 1f, float speed1 = 1f)
-    {
-        animation_Contorller.DisablePhaseLock(speed0, speed1);
-    }
-
-
+    public void DisableBlendPhaseLock(float s0=1f,float s1=1f)=> animation_Contorller.DisablePhaseLockForWalkRun(s0,s1);
 }

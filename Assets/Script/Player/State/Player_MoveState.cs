@@ -112,7 +112,7 @@ public class Player_MoveState : PlayerStateBase
             // 摇杆幅度（0..1）
             float mag = Mathf.Clamp01(move.magnitude);
 
-            //=========设一个“强制 Walk”的阈值（0, 0.25）=========
+            //=========设一个“强制 Walk”的阈值（0, 0.5）=========
             //*********【在这里修改walk阈值】*********************
             const float walkHold = 0.5f;
 

@@ -15,12 +15,12 @@ public class TestAnimation_Contorller : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            animation_controller.PlayAnimation(animationClip1);
+            animation_controller.PlaySingleAnimation(animationClip1);
         }
 
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-            animation_controller.PlayAnimation(animationClip2);
+            animation_controller.PlaySingleAnimation(animationClip2);
         }
     }
 }
