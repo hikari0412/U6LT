@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using JKFrame;
+using ECM2;
 
 /// <summary>
 /// Player_MoveState
@@ -31,13 +32,14 @@ using JKFrame;
 /// </summary>
 public class Player_MoveState : PlayerStateBase
 {
-    private CharacterController characterController;   // 角色控制器（unity提供的组件）
+    private Character ecmCharacter;   // 角色控制器（ECM2）
     private InputControls input;      // 生成的输入类
     private InputAction moveAction;   // player/Move
     private SHSariaConfig shSariaConfig;  //把配置文件里的数值（walkSpeed）包一层属性来取
     private float walkSpeed => shSariaConfig != null ? shSariaConfig.walkSpeed : 1f; //walkSpeed只读，外部无法随意修改，如果没填就取1
-    private float runSpeed => shSariaConfig != null ? shSariaConfig.runSpeed : 1f;
-    private float rotateSpeed => shSariaConfig != null ? shSariaConfig.rotateSpeed : 1f;
+    private float walkHold => shSariaConfig != null ? shSariaConfig.walkHold : 0.5f;
+    private float runSpeed => shSariaConfig != null ? shSariaConfig.runSpeed : 3f;
+    private float rotateSpeed => shSariaConfig != null ? shSariaConfig.rotateSpeed : 10f;
 
     // 键鼠：是否强制走路（左Ctrl 切换）
     private bool forceWalkKeyboard = false;
@@ -45,10 +47,11 @@ public class Player_MoveState : PlayerStateBase
     public override void Init(IStateMachineOwner owner)
     {
         base.Init(owner);    //调用基类的init，如果不写这个player就不会被赋值，后面就会NullReference
-        characterController = player.GetComponent<CharacterController>();
-        if (characterController == null)
+
+        ecmCharacter = player.GetComponent<Character>();
+        if (ecmCharacter == null)
         {
-            Debug.LogError("[Player_MoveState] 未找到 CharacterController。");
+            Debug.LogError("[MoveState] 请在 Player 上添加 ECM2.Character 组件。");
         }
         shSariaConfig = player.ShSariaConfig;   // 从宿主拿配置
         input = new InputControls();
@@ -92,63 +95,12 @@ public class Player_MoveState : PlayerStateBase
 
         if (Mathf.Approximately(h, 0f) && Mathf.Approximately(v, 0f))
         {
+            //把 ECM2 的方向清零，避免残留速度
+            ecmCharacter?.SetMovementDirection(Vector3.zero);
             //切换状态
             player.ChangeState(PlayerState.Idle);
             return;
         }
-
-
-        // ========= 核心：手柄阈值 + 平滑混合规则 =========
-        float walkWeight = 0f;
-
-        // 判断是否使用了手柄：优先使用“当前这个 Action 的活动控制器设备”来判断，
-        // 如果拿不到，再退化为 Gamepad.current 的启用帧判断。
-        bool usingGamepad =
-            (moveAction.activeControl != null && moveAction.activeControl.device is Gamepad)
-            || (Gamepad.current != null && Gamepad.current.wasUpdatedThisFrame);
-
-        if (usingGamepad)
-        {
-            // 摇杆幅度（0..1）
-            float mag = Mathf.Clamp01(move.magnitude);
-
-            //=========设一个“强制 Walk”的阈值（0, 0.5）=========
-            //*********【在这里修改walk阈值】*********************
-            const float walkHold = 0.5f;
-
-            if (mag > 0f && mag < walkHold)
-            {
-                // 小幅推动：全额 Walk
-                walkWeight = 1f;
-            }
-            else
-            {
-                // 进入混合区：从 walkHold → 1 映射到 0 → 1 的跑步权重
-                float t = Mathf.InverseLerp(walkHold, 1f, mag); // 线性 0..1
-                                                                // 用 SmoothStep 平滑一下过渡手感（比线性更顺）
-                float runWeight = Mathf.SmoothStep(0f, 1f, t);
-                walkWeight = 1f - runWeight;
-            }
-        }
-        else
-        {
-            // 键鼠：默认 Run=1；按左Ctrl 切换为 Walk（再按回去）
-            walkWeight = forceWalkKeyboard ? 1f : 0f;
-        }
-
-        // 将权重写给动画（假设顺序为 [Walk, Run]）
-        player.SetBlendWeight(walkWeight);
-
-        // ★ 每帧用 Walk 权重推进相位（按混合周期平滑过渡）
-        player.UpdateBlendPhaseLock(walkWeight);
-
-
-        // =========================
-        // 下面处理位移与旋转
-        // =========================
-
-        //处理移动
-        Vector3 inputDir = new Vector3(h, 0, v);
 
         //获取相机的y轴旋转值
         //记得要给主相机打上MainCamera的Tag
@@ -159,36 +111,80 @@ public class Player_MoveState : PlayerStateBase
         }
         float cameraRotY = Camera.main.transform.localEulerAngles.y;
 
+        Vector3 inputDir = new Vector3(h, 0f, v);
         //把输入向量 inputDir 按照相机的 Y 轴朝向旋转一遍。
         //让四元数和向量相乘，表示这个向量按照这个四元数进行旋转之后获得的新向量
-        Vector3 moveDir = Quaternion.Euler(0, cameraRotY, 0) * inputDir;
+        Vector3 worldDir = Quaternion.Euler(0, cameraRotY, 0) * inputDir;
+        Vector3 desiredDir = worldDir.normalized;
 
-        // 根据动画权重选择移动速度：权重与动画一致（Blend 一致性）
-        float currSpeed = Mathf.Lerp(walkSpeed, runSpeed, 1-walkWeight);
+        // ========= 核心：手柄阈值 + 平滑混合规则 =========
+        // 判断是否使用了手柄：优先使用“当前这个 Action 的活动控制器设备”来判断，
+        // 如果拿不到，再退化为 Gamepad.current 的启用帧判断。
+        bool usingGamepad =
+            (moveAction.activeControl != null && moveAction.activeControl.device is Gamepad)
+            || (Gamepad.current != null && Gamepad.current.wasUpdatedThisFrame);
 
-        //玩家的移动量
-        Vector3 motion = moveDir * currSpeed * Time.deltaTime;
+        float walkWeight;
+        float targetSpeed; // 期望物理速度（在 walkSpeed ~ runSpeed 之间）
 
-        //重力值（写死）
-        motion.y -= 9.8f * Time.deltaTime;
-
-        //角色控制器移动
-        if (characterController != null)
+        if (usingGamepad)
         {
-            characterController.Move(motion);
+            // 摇杆幅度（0..1）
+            float mag = Mathf.Clamp01(move.magnitude);
+
+            if (mag > 0f && mag < walkHold)
+            {
+                // 小幅推动：全额 Walk
+                walkWeight = 1f;
+                targetSpeed = walkSpeed;
+            }
+            else
+            {
+                // 进入混合区：从 walkHold → 1 映射到 0 → 1 的跑步权重
+                float t = Mathf.InverseLerp(walkHold, 1f, mag); // 线性 0..1
+                                                                // 用 SmoothStep 平滑一下过渡手感（比线性更顺）
+                float runWeight = Mathf.SmoothStep(0f, 1f, t);
+                walkWeight = 1f - runWeight;
+
+                // 速度也随之从 walkSpeed → runSpeed 插值
+                targetSpeed = Mathf.Lerp(walkSpeed, runSpeed, runWeight);
+            }
+        }
+        else
+        {
+            // 键鼠：LeftCtrl 强制走路，否则跑
+            if (forceWalkKeyboard)
+            {
+                walkWeight = 1f;
+                targetSpeed = walkSpeed;
+            }
+            else
+            {
+                walkWeight = 0f;
+                targetSpeed = runSpeed;
+            }
         }
 
-        //处理旋转，旋转只改模型层，不改player（不然会影响相机）
-        if (moveDir.sqrMagnitude > 0.0001f)
+        // —— 把“方向 × 速度比例”交给 ECM2 —— 
+        // 注意：请让 ECM2 的 Max Speed ≈ runSpeed；否则比例会失真
+        float speedFactor = targetSpeed / Mathf.Max(0.0001f, runSpeed);
+        ecmCharacter?.SetMovementDirection(desiredDir * speedFactor);
+
+        // —— 动画权重与相位锁 —— 
+        player.SetBlendWeight(walkWeight);
+        player.UpdateBlendPhaseLock(walkWeight);
+
+        // —— 旋转：只转模型（保持原手感）——
+        if (desiredDir.sqrMagnitude > 0.0001f)
         {
             player.ModelTransform.rotation = Quaternion.Slerp(
                 player.ModelTransform.rotation,
-                Quaternion.LookRotation(moveDir),
+                Quaternion.LookRotation(desiredDir),
                 Time.deltaTime * rotateSpeed
             );
         }
     }
-    
+
 
     //离开当前状态时停止监听输入
     public override void Exit()
