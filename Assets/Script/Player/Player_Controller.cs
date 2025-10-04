@@ -1,34 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using JKFrame;
-using System.Runtime.CompilerServices;
-using UnityEditor.Rendering.LookDev;
-
-/// <summary>
-/// Player_Controller
-/// -------------------------------------------------------------------------
-/// 职责：
-/// - 作为玩家的中枢控制器，协调动画、状态机和配置。
-/// - 初始化 Animation_Contorller 和状态机（StateMachine）。
-/// - 提供外部接口：播放单动画、播放 Blend 动画、设置 Blend 权重。
-/// - 对状态机进行状态切换（Idle、Move等）。
-/// - 提供相位锁接口：Enable / Update / Disable，用于步频同步。
-///
-/// 主要结构：
-/// - Awake：自动补齐 Animation_Contorller 引用。
-/// - Start/Init：初始化动画控制器、状态机，并进入默认状态 Idle。
-/// - ChangeState：封装状态切换逻辑，基于 PlayerState 枚举。
-/// - PlayAnimation / PlayBlendAnimation：通过配置获取 AnimationClip 并播放。
-/// - SetBlendWeight：传递权重到 Animation_Contorller。
-/// - 相位锁接口：对 Animation_Contorller 的 Enable/Update/Disable 封装。
-///
-/// 注意事项：
-/// - Animation_Contorller 必须在 Player 的子物体上存在，否则无法初始化。
-/// - shSariaConfig 需在 Inspector 赋值，否则无法根据名字找到动画。
-/// - modelTransform 必须正确拖入，用于控制角色外观部分旋转。
-/// -------------------------------------------------------------------------
-/// </summary>
+using UnityEngine.InputSystem;
+using ECM2;
+using Unity.Cinemachine;
 
 public class Player_Controller : SingletonMono<Player_Controller>, IStateMachineOwner
 {
@@ -41,15 +15,84 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
     private StateMachine stateMachine;
     private PlayerState playerState; // 玩家的当前状态标识
 
+    // ---------------------------
+    // 摄像机控制参数
+    // ---------------------------
+
+    [Header("Camera Settings")]
+
+    // 成员变量（可序列化引用或在 Awake/Start 里 GetComponent）
+    [SerializeField] private CinemachineCamera freeLookCam;
+    [Tooltip("缩放灵敏度（滚轮倍率）")]
+    [SerializeField] private float zoomSensitivity = 1.0f;
+
+    [Tooltip("最小FOV（值越小视角越近）")]
+    [SerializeField] private float minFOV = 10f;
+
+    [Tooltip("最大FOV（值越大视角越远）")]
+    [SerializeField] private float maxFOV = 40f;
+
+
+    // ---------------------------
+    // 角色与输入
+    // ---------------------------
+
+    protected Character ecmcharacter;    // ECM2 角色
+
+    // 新输入系统的包装类（由 Input System 生成）
+    private InputControls _input;
+
+    // 便捷引用（避免每帧查找）
+    private InputAction _moveAction;
+    private InputAction _lookAction;
+    private InputAction _zoomAction;
+    private InputAction _jumpAction;
+
+
     private void Awake()
     {
+        // 获取 Character 组件（必须存在 ECM2.Character）
+        ecmcharacter = GetComponent<Character>();
+
+        if (ecmcharacter == null)
+        {
+            Debug.LogError("ThirdPersonController: 未找到 Character 组件！");
+            enabled = false;
+        }
+
         // 自动补齐引用，防止忘记拖
         if (animation_Contorller == null)
         {
             animation_Contorller = GetComponentInChildren<Animation_Contorller>();
         }
         // 如果 Animation_Contorller 里需要 Animator，一定要在它的脚本里也做空引用检查
+
+        // 初始化 InputActions（确保你的 InputActions 里有 player.Map 与下列动作）
+        _input = new InputControls();
+
+        _moveAction = _input.player.Move;   // Vector2
+        _lookAction = _input.player.Look;   // Vector2（建议绑定 Mouse delta / RightStick）
+        _zoomAction = _input.player.Zoom;   // float  （建议绑定 Mouse scroll Y）
+        _jumpAction = _input.player.Jump;   // Button
     }
+
+    private void OnEnable()
+    {
+        _input.Enable();
+
+        // 跳跃：按下=Jump，松开=StopJumping（支持可变跳高）
+        _jumpAction.performed += OnJumpPerformed;
+        _jumpAction.canceled += OnJumpCanceled;
+    }
+
+    private void OnDisable()
+    {
+        _jumpAction.performed -= OnJumpPerformed;
+        _jumpAction.canceled -= OnJumpCanceled;
+
+        _input.Disable();
+    }
+
     private void Start()
     {
         Init();
@@ -93,6 +136,9 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
                 break;
             case PlayerState.Move:
                 stateMachine.ChangeState<Player_MoveState>();
+                break;
+            case PlayerState.Jump:
+                stateMachine.ChangeState<Player_JumpState>();
                 break;
             default:
                 break;
@@ -162,10 +208,65 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
 
     /// <summary>启用 Walk/Run 的相位锁（可选初相位）。</summary>
     public void EnableBlendPhaseLock(float? initPhase01 = null) => animation_Contorller.EnablePhaseLockForWalkRun(initPhase01);
-    
+
     /// <summary>按当前 Walk 权重推进相位（每帧调用）。</summary>
-    public void UpdateBlendPhaseLock(float walkWeight)        => animation_Contorller.UpdatePhaseLockForWalkRun(walkWeight);
-    
+    public void UpdateBlendPhaseLock(float walkWeight) => animation_Contorller.UpdatePhaseLockForWalkRun(walkWeight);
+
     /// <summary>关闭相位锁，恢复自动播放速度（默认1,1；如需自定义可传参）。</summary>
-    public void DisableBlendPhaseLock(float s0=1f,float s1=1f)=> animation_Contorller.DisablePhaseLockForWalkRun(s0,s1);
+    public void DisableBlendPhaseLock(float s0 = 1f, float s1 = 1f) => animation_Contorller.DisablePhaseLockForWalkRun(s0, s1);
+
+    private void Update()
+    {
+        // =========================
+        // 1) 移动（每帧轮询 Vector2）
+        // =========================
+        Vector2 move2D = _moveAction.ReadValue<Vector2>(); // (-1..1, -1..1)
+
+        // 由输入合成世界空间移动方向
+        Vector3 moveDir = new Vector3(move2D.x, 0f, move2D.y);
+
+        // 若角色挂有 cameraTransform，则将移动方向“相对相机”旋转
+        if (ecmcharacter.camera)
+            moveDir = moveDir.relativeTo(ecmcharacter.cameraTransform, ecmcharacter.GetUpVector());
+
+        // 交给 ECM2（物理加速度、阻尼、地面约束等都由 ECM2 处理）
+        ecmcharacter.SetMovementDirection(moveDir);
+
+        // =========================
+        // 2) 缩放（Mouse Scroll / Gamepad D-Pad）
+        // Zoom 在 InputControls 中是 Vector2（Mouse/scroll 与 Gamepad/dpad），只取 y 分量
+        // =========================
+        Vector2 zoom2D = _zoomAction.ReadValue<Vector2>();
+        float zoomY = zoom2D.y;
+
+        if (Mathf.Abs(zoomY) > 0.0001f && freeLookCam != null)
+        {
+            float newFOV = Mathf.Clamp(
+                freeLookCam.Lens.FieldOfView - zoomY * zoomSensitivity,
+                10f, 40f  // 可调
+            );
+            freeLookCam.Lens.FieldOfView = newFOV;
+        }
+    }
+
+
+    // ----------------------------------------------------------------
+    // 输入事件：跳跃 
+    // ----------------------------------------------------------------
+
+    private void OnJumpPerformed(InputAction.CallbackContext ctx)
+    {
+        // 起跳前短暂停用贴地约束，避免“粘地”抵消垂直速度（可按项目需要开/关）
+        ecmcharacter.PauseGroundConstraint(0.12f);
+
+        // 触发 ECM2 的跳跃输入（ECM2 内部会在模拟阶段 DoJump）
+        ecmcharacter.Jump();
+    }
+
+    private void OnJumpCanceled(InputAction.CallbackContext ctx)
+    {
+        // 松开 → 可变跳高（更短的上升）
+        ecmcharacter.StopJumping();
+    }
+
 }

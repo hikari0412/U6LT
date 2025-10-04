@@ -56,5 +56,6 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "U6LT.sln"
+    "dotnet.defaultSolution": "U6LT.sln",
+    "dotnet.server.useOmnisharp": true
 }

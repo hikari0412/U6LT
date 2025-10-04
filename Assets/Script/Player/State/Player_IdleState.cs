@@ -9,6 +9,7 @@ public class Player_IdleState : PlayerStateBase
 {
     private InputControls input;      // 新输入系统生成的输入类
     private InputAction moveAction;   // player/Move
+    private InputAction jumpAction;
 
     public override void Init(IStateMachineOwner owner)
     {
@@ -16,9 +17,10 @@ public class Player_IdleState : PlayerStateBase
         input = new InputControls();
         //取出 input 里 "player" 这个 ActionMap 下的 "Move" 动作，并缓存到 moveAction。
         //这个Move是指input系统里设置的Move动作，不是状态机的Move状态
-        moveAction = input.player.Move; 
+        moveAction = input.player.Move;
+        jumpAction = input.player.Jump;
     }
-    
+
     public override void Enter()
     {
         //如果 input != null，就调用 Enable()；
@@ -32,12 +34,17 @@ public class Player_IdleState : PlayerStateBase
 
     public override void Update()
     {
+        if (jumpAction.WasPerformedThisFrame())
+        {
+            player.ChangeState(PlayerState.Jump);
+        }
+
         //检测玩家的输入
         Vector2 move = moveAction.ReadValue<Vector2>();
         float h = move.x;
         float v = move.y;
 
-        if (h!=0 || v!=0)
+        if (h != 0 || v != 0)
         {
             //切换状态
             player.ChangeState(PlayerState.Move);

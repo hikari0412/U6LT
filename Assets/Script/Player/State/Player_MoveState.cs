@@ -35,6 +35,7 @@ public class Player_MoveState : PlayerStateBase
     private Character ecmCharacter;   // 角色控制器（ECM2）
     private InputControls input;      // 生成的输入类
     private InputAction moveAction;   // player/Move
+    private InputAction jumpAction;
     private SHSariaConfig shSariaConfig;  //把配置文件里的数值（walkSpeed）包一层属性来取
     private float walkSpeed => shSariaConfig != null ? shSariaConfig.walkSpeed : 1f; //walkSpeed只读，外部无法随意修改，如果没填就取1
     private float walkHold => shSariaConfig != null ? shSariaConfig.walkHold : 0.5f;
@@ -58,6 +59,7 @@ public class Player_MoveState : PlayerStateBase
         //取出 input 里 "player" 这个 ActionMap 下的 "Move" 动作，并缓存到 moveAction。
         //这个Move是指input系统里设置的Move动作，不是状态机的Move状态
         moveAction = input.player.Move;
+        jumpAction = input.player.Jump;
     }
 
     public override void Enter()
@@ -81,6 +83,12 @@ public class Player_MoveState : PlayerStateBase
 
     public override void Update()
     {
+        if (jumpAction.WasPerformedThisFrame())
+        {
+            player.ChangeState(PlayerState.Jump);
+            return;
+        }
+
         // —— 键鼠“强制走路”切换：左Ctrl 按下时在 Walk↔Run 间切换 ——
         // 注意：这里只影响“键鼠方案”；手柄方案用摇杆幅度自动混合。
         if (Keyboard.current != null && Keyboard.current.leftCtrlKey.wasPressedThisFrame)

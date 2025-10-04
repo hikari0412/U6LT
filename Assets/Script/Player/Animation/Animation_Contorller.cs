@@ -29,7 +29,7 @@ using UnityEngine.Playables;
 
 public class Animation_Contorller : MonoBehaviour
 {
-
+    #region ====================================== Fields & Properties ======================================
     [SerializeField] private Animator animator;
 
     private PlayableGraph graph;
@@ -58,7 +58,9 @@ public class Animation_Contorller : MonoBehaviour
     // —— 相位锁（Phase Lock）——（由 BlendAnimationNode 实现，控制器只做“Walk/Run 时”的调用转发）
     private bool phaseLockEnabled = false;   // 是否启用归一化相位锁
     private double phase01 = 0.0;            // 0..1 的归一化相位（左脚着地→左脚着地）
+    #endregion
 
+    #region ====================================== Lifecycle / Init & Teardown ======================================
     /// <summary>
     /// 初始化：确保 Animator / Graph / Mixer / 对象池 就绪（可重复调用，幂等）
     /// </summary>
@@ -78,18 +80,22 @@ public class Animation_Contorller : MonoBehaviour
         // 2) Graph 自检（重复调用 Init 不会重复创建）
         if (!graph.IsValid())
         {
+            // 创建图
             graph = PlayableGraph.Create("Animation_Contorller");
+            // 设置图的时间模式
             graph.SetTimeUpdateMode(DirectorUpdateMode.GameTime);
         }
 
         // 3) Mixer 自检（3 路：0/1=普通，2=blend 副混合器入口）
         if (!mixer.IsValid())
         {
+            // 主混合器：3 输入（0/1=普通，2=blend 副混合器入口）
             mixer = AnimationMixerPlayable.Create(graph, 3);
             // 绑定输出到 Animator
             var output = AnimationPlayableOutput.Create(graph, "Animation", animator);
             output.SetSourcePlayable(mixer);
 
+            // 初始权重清零
             mixer.SetInputWeight(0, 0f);
             mixer.SetInputWeight(1, 0f);
             mixer.SetInputWeight(2, 0f);
@@ -100,26 +106,14 @@ public class Animation_Contorller : MonoBehaviour
             graph.Play();
         }
 
-        // 创建图
-        graph = PlayableGraph.Create("Animation_Contorller");
-        // 设置图的时间模式
-        graph.SetTimeUpdateMode(DirectorUpdateMode.GameTime);
-
-        // 主混合器：3 输入（0/1=普通，2=blend 副混合器入口）
-        mixer = AnimationMixerPlayable.Create(graph, 3);
-        mixer.SetInputWeight(0, 0f);
-        mixer.SetInputWeight(1, 0f);
-        mixer.SetInputWeight(2, 0f);
-
-        // 创建Output,让混合器链接上Output
-        var playableOutput = AnimationPlayableOutput.Create(graph, "Animation", animator);
-        playableOutput.SetSourcePlayable(mixer);
-
         //对象池初始化
         PoolSystem.InitObjectPool<SingleAnimationNode>(maxCapacity: 16, defaultQuantity: 4); // 预热4个
         PoolSystem.InitObjectPool<BlendAnimationNode>(maxCapacity: 8, defaultQuantity: 2); // 预热2个
     }
 
+    /// <summary>
+    /// 从混合器断开并回收到对象池（由控制器统一调用）
+    /// </summary>
     public void DestoryNode(AnimationNodeBase node)
     {
         if (node != null)
@@ -129,6 +123,24 @@ public class Animation_Contorller : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        if (graph.IsValid())
+        {
+            graph.Destroy();
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (graph.IsValid())
+        {
+            graph.Destroy();
+        }
+    }
+    #endregion
+
+    #region ====================================== Transition（统一过渡协程） ======================================
     private void StartTransitionAnimation(float fixedTime)
     {
         if (transitionCoroutine != null)
@@ -155,8 +167,9 @@ public class Animation_Contorller : MonoBehaviour
             mixer.SetInputWeight(inputPort1, 0f);
             mixer.SetInputWeight(inputPort0, 1f);
         }
-        else//后面这段正确吗？
+        else
         {
+            // 平滑：旧权重从 start → 0，新权重做 1 - 旧
             float start = Mathf.Clamp01(mixer.GetInputWeight(inputPort1));
             float t = 0f;
             while (t < fixedTime)
@@ -172,10 +185,12 @@ public class Animation_Contorller : MonoBehaviour
         }
         transitionCoroutine = null;
     }
+    #endregion
 
+    #region ====================================== Play：单动画 ======================================
 
     /// <summary>
-    /// 播放单个动画
+    /// 播放单个动画（可选：refreshAnimation 跳过“同剪辑去抖”）
     /// </summary>
     public void PlaySingleAnimation(AnimationClip animationClip, float speed = 1, bool refreshAnimation = false, float transtionFixedTime = 0.25f)
     {
@@ -200,7 +215,7 @@ public class Animation_Contorller : MonoBehaviour
         SingleAnimationNode singleAnimationNode = null;
         if (currentNode == null) //首次播放
         {
-            singleAnimationNode = PoolSystem.GetObject<SingleAnimationNode>();//因为动画会频繁切换所以使用对象池（这里可能有问题，如果没有的话要new一下）
+            singleAnimationNode = PoolSystem.GetObject<SingleAnimationNode>();//因为动画会频繁切换所以使用对象池
             singleAnimationNode.Init(graph, mixer, animationClip, speed, inputPort0);
             mixer.SetInputWeight(inputPort0, 1);
         }
@@ -223,31 +238,9 @@ public class Animation_Contorller : MonoBehaviour
         if (graph.IsPlaying() == false)
         { graph.Play(); }
     }
+    #endregion
 
-    /// <summary>
-    /// 播放混合动画（数组混合）
-    /// </summary>
-    public void PlayBlendAnimation(List<AnimationClip> clips, float speed = 1, float transitionFixedTime = 0.25f)
-    {
-        BlendAnimationNode blendAnimationNode = PoolSystem.GetObject<BlendAnimationNode>();
-        // 如果是第一次播放，不存在过渡
-        if (currentNode == null)
-        {
-            blendAnimationNode.Init(graph, mixer, clips, speed, inputPort0);
-            mixer.SetInputWeight(inputPort0, 1);
-        }
-        else
-        {
-            DestoryNode(previousNode);
-            blendAnimationNode.Init(graph, mixer, clips, speed, inputPort1);
-            previousNode = currentNode;
-            StartTransitionAnimation(transitionFixedTime);
-        }
-        this.speed = speed;
-        currentNode = blendAnimationNode;
-        if (graph.IsPlaying() == false) graph.Play();
-    }
-
+    #region ====================================== Play：混合动画 ======================================
     /// <summary>
     /// 播放混合动画（2个混合）
     /// </summary>
@@ -272,6 +265,34 @@ public class Animation_Contorller : MonoBehaviour
         if (graph.IsPlaying() == false) graph.Play();
     }
 
+    /// <summary>
+    /// 播放混合动画（数组(2个以上)混合）
+    /// </summary>
+    public void PlayBlendAnimation(List<AnimationClip> clips, float speed = 1, float transitionFixedTime = 0.25f)
+    {
+        BlendAnimationNode blendAnimationNode = PoolSystem.GetObject<BlendAnimationNode>();
+        // 如果是第一次播放，不存在过渡
+        if (currentNode == null)
+        {
+            blendAnimationNode.Init(graph, mixer, clips, speed, inputPort0);
+            mixer.SetInputWeight(inputPort0, 1);
+        }
+        else
+        {
+            DestoryNode(previousNode);
+            blendAnimationNode.Init(graph, mixer, clips, speed, inputPort1);
+            previousNode = currentNode;
+            StartTransitionAnimation(transitionFixedTime);
+        }
+        this.speed = speed;
+        currentNode = blendAnimationNode;
+        if (graph.IsPlaying() == false) graph.Play();
+    }
+
+    #endregion
+
+    #region ====================================== Blend Weight（对外接口） ======================================
+
     public void SetBlendWeight(List<float> weightList)
     {
         if (currentNode is BlendAnimationNode b) b.SetBlendWeight(weightList);
@@ -280,9 +301,11 @@ public class Animation_Contorller : MonoBehaviour
     {
         if (currentNode is BlendAnimationNode b) b.SetBlendWeight(clip1Weight);
     }
+    #endregion
 
+    #region ====================================== 相位锁（仅 Walk/Run 双路时启用） ======================================
 
-        public void EnablePhaseLockForWalkRun (float? initPhase01 = null)
+    public void EnablePhaseLockForWalkRun(float? initPhase01 = null)
     {
         if (currentNode is BlendAnimationNode b && b.ClipCount == 2)
         {
@@ -306,26 +329,9 @@ public class Animation_Contorller : MonoBehaviour
             b.DisablePhaseLock(speed0, speed1);
         }
     }
+    #endregion
 
-
-    private void OnDestroy()
-    {
-        if (graph.IsValid())
-        {
-            graph.Destroy();
-        }
-    }
-
-    private void OnDisable()
-    {
-        if (graph.IsValid())
-        {
-            graph.Destroy();
-        }
-    }
-
-
-    #region RootMotion
+    #region ====================================== RootMotion 回调（可选） ======================================
     private Action<Vector3, Quaternion> rootMotionAction;
     private void OnAnimatorMove()
     {
