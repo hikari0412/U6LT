@@ -44,11 +44,18 @@ public class Player_IdleState : PlayerStateBase
         float forwardAmount = ecmCharacter.useRootMotion && ecmCharacter.GetRootMotionController()
                 ? move.z
                 : Mathf.InverseLerp(0.0f, ecmCharacter.GetMaxSpeed(), ecmCharacter.GetSpeed());
+        
+        // 计算地面速度（忽略Y）
+        Vector3 vel = ecmCharacter.GetVelocity();
+        vel.y = 0f;
+        float horizSpeed = vel.magnitude;
+        float speedXZ = Mathf.InverseLerp(0f, ecmCharacter.GetMaxSpeed(), horizSpeed);  // 0..1
 
-        if (forwardAmount != 0)
+        if (speedXZ >= 0.05f)
         {
             //切换状态
             player.ChangeState(PlayerState.Move);
+            return;
         }
     }
 

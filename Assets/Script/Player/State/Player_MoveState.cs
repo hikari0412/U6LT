@@ -56,24 +56,30 @@ public class Player_MoveState : PlayerStateBase
                 ? move.z
                 : Mathf.InverseLerp(0.0f, ecmCharacter.GetMaxSpeed(), ecmCharacter.GetSpeed());
 
-        float forwardAmountXZ = new Vector2(move.x, move.z).magnitude;
-
-        if (forwardAmountXZ == 0)
+        if (forwardAmount <= 0.05f)
         {
-            player.DisableBlendPhaseLock();
             //切换状态
             player.ChangeState(PlayerState.Idle);
+            player.DisableBlendPhaseLock();
+            return;
         }
 
         // === 根据ecm2的物理速度设置 Walk↔Run 混合比例 ===
         // 0..walkHold → 全 Walk；walkHold..1 → 线性过渡到 Run
-        float speedRatio = Mathf.Clamp01(forwardAmountXZ);
+
+        // 计算地面速度（忽略Y）
+        Vector3 vel = ecmCharacter.GetVelocity();
+        vel.y = 0f;
+        float horizSpeed = vel.magnitude;
+        float speedXZ = Mathf.InverseLerp(0f, ecmCharacter.GetMaxSpeed(), horizSpeed);  // 0..1
+        
+        float speedRatio = Mathf.Clamp01(speedXZ);
         float runTarget = Mathf.Clamp01((speedRatio - walkHold) * 2f);
-        float walkWeight = 1f - runTarget;
+        float walkTarget = 1f - runTarget;
 
         // 平滑：指数平滑，避免权重剧变
-        //float blendSmoothFactor = 1f - Mathf.Exp(-deltaTime / blendTau);
-        //walkWeight = Mathf.Lerp(walkWeight, walkTarget, blendSmoothFactor);
+        float blendSmoothFactor = 1f - Mathf.Exp(-deltaTime / blendTau);
+        walkWeight = Mathf.Lerp(walkWeight, walkTarget, blendSmoothFactor);
 
         // 下发两路混合（只传第一路 Walk 的权重）
         player.SetBlendWeight(walkWeight);

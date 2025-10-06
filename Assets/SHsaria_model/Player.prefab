@@ -105,7 +105,7 @@ MonoBehaviour:
   freeLookCam: {fileID: 0}
   zoomSensitivity: 1
   gamepadZoomSpeed: 40
-  minFOV: 6
+  minFOV: 8
   maxFOV: 40
 --- !u!114 &7164731542498921824
 MonoBehaviour:
