@@ -109,6 +109,7 @@ public class Animation_Contorller : MonoBehaviour
         //对象池初始化
         PoolSystem.InitObjectPool<SingleAnimationNode>(maxCapacity: 16, defaultQuantity: 4); // 预热4个
         PoolSystem.InitObjectPool<BlendAnimationNode>(maxCapacity: 8, defaultQuantity: 2); // 预热2个
+
     }
 
     /// <summary>

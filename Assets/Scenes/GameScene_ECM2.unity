@@ -4643,7 +4643,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 444466262}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.051225923, y: -0.0000000037204002, z: 1.9083148e-10, w: 0.9986871}
+  m_LocalRotation: {x: 0.057466347, y: 0.000000007438269, z: -4.2815776e-10, w: 0.99834746}
   m_LocalPosition: {x: 0, y: 1.5, z: -4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -8162,7 +8162,7 @@ MonoBehaviour:
       Size: {x: 0.8, y: 2}
       Offset: {x: 0, y: 0}
   CenterOnActivate: 1
-  TargetOffset: {x: 0, y: 1.5, z: 0}
+  TargetOffset: {x: 0, y: 1.45, z: 0}
   Damping: {x: 0.5, y: 0.5}
   Lookahead:
     Enabled: 0
@@ -8283,7 +8283,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 773704601}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.05122592, y: -0.0000000037204, z: 1.9083145e-10, w: 0.99868715}
+  m_LocalRotation: {x: 0.057466343, y: 0.0000000074382687, z: -4.2815762e-10, w: 0.9983475}
   m_LocalPosition: {x: 0, y: 1.5, z: -4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -13163,6 +13163,17 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1557583002}
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1573840143 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 9103618722514010350, guid: 8c345df240232594a81ff64294be1cab, type: 3}
+  m_PrefabInstance: {fileID: 1966787483431955720}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6f5338a96461264fb9a1132c8509672, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1575819028
 GameObject:
   m_ObjectHideFlags: 0
@@ -16037,6 +16048,7 @@ MonoBehaviour:
   modelTransform: {fileID: 1621609058}
   freeLookCam: {fileID: 0}
   zoomSensitivity: 1
+  gamepadZoomSpeed: 40
   minFOV: 10
   maxFOV: 40
 --- !u!143 &2016061333
@@ -17379,6 +17391,10 @@ PrefabInstance:
       propertyPath: _camera
       value: 
       objectReference: {fileID: 444466265}
+    - target: {fileID: 8917497831845962162, guid: 8c345df240232594a81ff64294be1cab, type: 3}
+      propertyPath: 'serializeData.colliderCollisionConstraint.colliderList.Array.data[0]'
+      value: 
+      objectReference: {fileID: 1573840143}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

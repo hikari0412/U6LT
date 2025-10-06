@@ -62,6 +62,33 @@ public partial class @InputControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""MoveSwitch"",
+                    ""type"": ""Button"",
+                    ""id"": ""c941b0b2-aea4-4d65-a016-e13c3b2cc415"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ZoomInGamePad"",
+                    ""type"": ""Button"",
+                    ""id"": ""f4f3d81c-5e93-47a8-8adf-c22300ec090c"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ZoomOutGamePad"",
+                    ""type"": ""Button"",
+                    ""id"": ""afef4f72-32e1-4d96-b12e-74226afe350e"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -144,6 +171,17 @@ public partial class @InputControls: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
+                    ""id"": ""cf78e00f-8f04-4144-8c75-6157fb8b337e"",
+                    ""path"": ""<Gamepad>/buttonSouth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Gamepad"",
+                    ""action"": ""Jump"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
                     ""id"": ""9f2adc43-c0ed-41e8-b581-7e3adf77b8a1"",
                     ""path"": ""<Gamepad>/rightStick"",
                     ""interactions"": """",
@@ -177,14 +215,80 @@ public partial class @InputControls: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""b42adcaa-4b90-43a2-a30a-7f3dad965994"",
-                    ""path"": ""<Gamepad>/dpad"",
+                    ""id"": ""146e23f2-e834-4d85-82bc-caf06df2e30c"",
+                    ""path"": ""<Keyboard>/leftCtrl"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""MoveSwitch"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""One Modifier"",
+                    ""id"": ""272f0fd8-5b8f-429b-9526-6653c125f5f4"",
+                    ""path"": ""OneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ZoomInGamePad"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""modifier"",
+                    ""id"": ""78dec846-efbc-43e3-82c0-c32ed012267f"",
+                    ""path"": ""<Gamepad>/leftShoulder"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Gamepad"",
-                    ""action"": ""Zoom"",
+                    ""action"": ""ZoomInGamePad"",
                     ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""binding"",
+                    ""id"": ""e25cd9d7-fbe3-455c-8413-347dd6b49cf3"",
+                    ""path"": ""<Gamepad>/rightTrigger"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Gamepad"",
+                    ""action"": ""ZoomInGamePad"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""One Modifier"",
+                    ""id"": ""f5bb3083-1790-448a-b13c-82c11f8191c7"",
+                    ""path"": ""OneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ZoomOutGamePad"",
+                    ""isComposite"": true,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""modifier"",
+                    ""id"": ""62d0e8eb-1eb3-42b5-a5de-87866da93c5c"",
+                    ""path"": ""<Gamepad>/leftShoulder"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Gamepad"",
+                    ""action"": ""ZoomOutGamePad"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""binding"",
+                    ""id"": ""0dc7e91d-93c3-4b4a-9b7c-39cdf303ec6d"",
+                    ""path"": ""<Gamepad>/leftTrigger"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Gamepad"",
+                    ""action"": ""ZoomOutGamePad"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
                 }
             ]
         }
@@ -225,6 +329,9 @@ public partial class @InputControls: IInputActionCollection2, IDisposable
         m_player_Jump = m_player.FindAction("Jump", throwIfNotFound: true);
         m_player_Look = m_player.FindAction("Look", throwIfNotFound: true);
         m_player_Zoom = m_player.FindAction("Zoom", throwIfNotFound: true);
+        m_player_MoveSwitch = m_player.FindAction("MoveSwitch", throwIfNotFound: true);
+        m_player_ZoomInGamePad = m_player.FindAction("ZoomInGamePad", throwIfNotFound: true);
+        m_player_ZoomOutGamePad = m_player.FindAction("ZoomOutGamePad", throwIfNotFound: true);
     }
 
     ~@InputControls()
@@ -295,6 +402,9 @@ public partial class @InputControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_player_Jump;
     private readonly InputAction m_player_Look;
     private readonly InputAction m_player_Zoom;
+    private readonly InputAction m_player_MoveSwitch;
+    private readonly InputAction m_player_ZoomInGamePad;
+    private readonly InputAction m_player_ZoomOutGamePad;
     public struct PlayerActions
     {
         private @InputControls m_Wrapper;
@@ -303,6 +413,9 @@ public partial class @InputControls: IInputActionCollection2, IDisposable
         public InputAction @Jump => m_Wrapper.m_player_Jump;
         public InputAction @Look => m_Wrapper.m_player_Look;
         public InputAction @Zoom => m_Wrapper.m_player_Zoom;
+        public InputAction @MoveSwitch => m_Wrapper.m_player_MoveSwitch;
+        public InputAction @ZoomInGamePad => m_Wrapper.m_player_ZoomInGamePad;
+        public InputAction @ZoomOutGamePad => m_Wrapper.m_player_ZoomOutGamePad;
         public InputActionMap Get() { return m_Wrapper.m_player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -324,6 +437,15 @@ public partial class @InputControls: IInputActionCollection2, IDisposable
             @Zoom.started += instance.OnZoom;
             @Zoom.performed += instance.OnZoom;
             @Zoom.canceled += instance.OnZoom;
+            @MoveSwitch.started += instance.OnMoveSwitch;
+            @MoveSwitch.performed += instance.OnMoveSwitch;
+            @MoveSwitch.canceled += instance.OnMoveSwitch;
+            @ZoomInGamePad.started += instance.OnZoomInGamePad;
+            @ZoomInGamePad.performed += instance.OnZoomInGamePad;
+            @ZoomInGamePad.canceled += instance.OnZoomInGamePad;
+            @ZoomOutGamePad.started += instance.OnZoomOutGamePad;
+            @ZoomOutGamePad.performed += instance.OnZoomOutGamePad;
+            @ZoomOutGamePad.canceled += instance.OnZoomOutGamePad;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -340,6 +462,15 @@ public partial class @InputControls: IInputActionCollection2, IDisposable
             @Zoom.started -= instance.OnZoom;
             @Zoom.performed -= instance.OnZoom;
             @Zoom.canceled -= instance.OnZoom;
+            @MoveSwitch.started -= instance.OnMoveSwitch;
+            @MoveSwitch.performed -= instance.OnMoveSwitch;
+            @MoveSwitch.canceled -= instance.OnMoveSwitch;
+            @ZoomInGamePad.started -= instance.OnZoomInGamePad;
+            @ZoomInGamePad.performed -= instance.OnZoomInGamePad;
+            @ZoomInGamePad.canceled -= instance.OnZoomInGamePad;
+            @ZoomOutGamePad.started -= instance.OnZoomOutGamePad;
+            @ZoomOutGamePad.performed -= instance.OnZoomOutGamePad;
+            @ZoomOutGamePad.canceled -= instance.OnZoomOutGamePad;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -381,5 +512,8 @@ public partial class @InputControls: IInputActionCollection2, IDisposable
         void OnJump(InputAction.CallbackContext context);
         void OnLook(InputAction.CallbackContext context);
         void OnZoom(InputAction.CallbackContext context);
+        void OnMoveSwitch(InputAction.CallbackContext context);
+        void OnZoomInGamePad(InputAction.CallbackContext context);
+        void OnZoomOutGamePad(InputAction.CallbackContext context);
     }
 }

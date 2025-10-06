@@ -159,7 +159,6 @@ public class BlendAnimationNode : AnimationNodeBase
         phaseLockEnabled = true;
         ApplyPhaseToTwoClips();
 
-        Debug.Log("[BlendAnimationNode] Walk/Run 相位锁已启用。");
     }
 
     /// <summary>

@@ -9,6 +9,6 @@ using System.Threading.Tasks;
 public enum PlayerState
 {
     Idle,
-    Move, 
+    Move,
     Jump,
 }

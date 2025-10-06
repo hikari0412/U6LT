@@ -40,6 +40,33 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
+                },
+                {
+                    "name": "MoveSwitch",
+                    "type": "Button",
+                    "id": "c941b0b2-aea4-4d65-a016-e13c3b2cc415",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ZoomInGamePad",
+                    "type": "Button",
+                    "id": "f4f3d81c-5e93-47a8-8adf-c22300ec090c",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ZoomOutGamePad",
+                    "type": "Button",
+                    "id": "afef4f72-32e1-4d96-b12e-74226afe350e",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -122,6 +149,17 @@
                 },
                 {
                     "name": "",
+                    "id": "cf78e00f-8f04-4144-8c75-6157fb8b337e",
+                    "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "9f2adc43-c0ed-41e8-b581-7e3adf77b8a1",
                     "path": "<Gamepad>/rightStick",
                     "interactions": "",
@@ -155,14 +193,80 @@
                 },
                 {
                     "name": "",
-                    "id": "b42adcaa-4b90-43a2-a30a-7f3dad965994",
-                    "path": "<Gamepad>/dpad",
+                    "id": "146e23f2-e834-4d85-82bc-caf06df2e30c",
+                    "path": "<Keyboard>/leftCtrl",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "MoveSwitch",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "One Modifier",
+                    "id": "272f0fd8-5b8f-429b-9526-6653c125f5f4",
+                    "path": "OneModifier",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ZoomInGamePad",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "modifier",
+                    "id": "78dec846-efbc-43e3-82c0-c32ed012267f",
+                    "path": "<Gamepad>/leftShoulder",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
-                    "action": "Zoom",
+                    "action": "ZoomInGamePad",
                     "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "binding",
+                    "id": "e25cd9d7-fbe3-455c-8413-347dd6b49cf3",
+                    "path": "<Gamepad>/rightTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "ZoomInGamePad",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "One Modifier",
+                    "id": "f5bb3083-1790-448a-b13c-82c11f8191c7",
+                    "path": "OneModifier",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ZoomOutGamePad",
+                    "isComposite": true,
                     "isPartOfComposite": false
+                },
+                {
+                    "name": "modifier",
+                    "id": "62d0e8eb-1eb3-42b5-a5de-87866da93c5c",
+                    "path": "<Gamepad>/leftShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "ZoomOutGamePad",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "binding",
+                    "id": "0dc7e91d-93c3-4b4a-9b7c-39cdf303ec6d",
+                    "path": "<Gamepad>/leftTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "ZoomOutGamePad",
+                    "isComposite": false,
+                    "isPartOfComposite": true
                 }
             ]
         }

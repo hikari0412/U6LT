@@ -3,17 +3,21 @@ using JKFrame;
 using UnityEngine.InputSystem;
 using ECM2;
 using Unity.Cinemachine;
+using System.Collections.Generic;
 
 public class Player_Controller : SingletonMono<Player_Controller>, IStateMachineOwner
 {
     [SerializeField] Animation_Contorller animation_Contorller;
     [SerializeField] private SHSariaConfig shSariaConfig;
     public SHSariaConfig ShSariaConfig => shSariaConfig;// 方便外部访问配置
+    private float walkSpeedRadio => shSariaConfig != null ? shSariaConfig.walkSpeedRadio : 0.5f; //walkSpeed只读，外部无法随意修改，如果没填就取1
+    private float walkHold => shSariaConfig != null ? shSariaConfig.walkHold : 0.5f;
 
     [SerializeField] private Transform modelTransform;//把模型部分拖进来，以防旋转等影响player controller
     public Transform ModelTransform => modelTransform;
     private StateMachine stateMachine;
     private PlayerState playerState; // 玩家的当前状态标识
+
 
     // ---------------------------
     // 摄像机控制参数
@@ -25,6 +29,9 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
     [SerializeField] private CinemachineCamera freeLookCam;
     [Tooltip("缩放灵敏度（滚轮倍率）")]
     [SerializeField] private float zoomSensitivity = 1.0f;
+
+    [Tooltip("缩放灵敏度（手柄缩放速度）")]
+    [SerializeField] private float gamepadZoomSpeed = 40f;
 
     [Tooltip("最小FOV（值越小视角越近）")]
     [SerializeField] private float minFOV = 10f;
@@ -47,7 +54,11 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
     private InputAction _lookAction;
     private InputAction _zoomAction;
     private InputAction _jumpAction;
-
+    private InputAction _moveSwitchAction;
+    private InputAction _zoomInAction;
+    private InputAction _zoomOutAction;
+    private bool _walkToggle = false;
+    private bool _lastMoveWasKeyboard = false;
 
     private void Awake()
     {
@@ -74,6 +85,9 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
         _lookAction = _input.player.Look;   // Vector2（建议绑定 Mouse delta / RightStick）
         _zoomAction = _input.player.Zoom;   // float  （建议绑定 Mouse scroll Y）
         _jumpAction = _input.player.Jump;   // Button
+        _moveSwitchAction = _input.player.MoveSwitch;   // Button
+        _zoomInAction = _input.player.ZoomInGamePad;   // 按住 LB+RT
+        _zoomOutAction = _input.player.ZoomOutGamePad; // 按住 LB+LT
     }
 
     private void OnEnable()
@@ -83,12 +97,22 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
         // 跳跃：按下=Jump，松开=StopJumping（支持可变跳高）
         _jumpAction.performed += OnJumpPerformed;
         _jumpAction.canceled += OnJumpCanceled;
+
+        _zoomInAction.Enable();
+        _zoomOutAction.Enable();
+
+        _moveSwitchAction.performed += OnMoveSwitch;
     }
 
     private void OnDisable()
     {
         _jumpAction.performed -= OnJumpPerformed;
         _jumpAction.canceled -= OnJumpCanceled;
+
+        _moveSwitchAction.performed -= OnMoveSwitch;
+
+        _zoomInAction.Disable();
+        _zoomOutAction.Disable();
 
         _input.Disable();
     }
@@ -206,6 +230,41 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
     }
 
 
+    /// <summary>
+    /// 播放blend动画（多个）
+    /// </summary>
+    public void PlayBlendAnimation(List<AnimationClip> clips, float speed = 1, float transitionFixedTime = 0.25f)
+    {
+        if (clips == null || clips.Count == 0)
+        {
+            Debug.LogWarning("[Player_Controller] clips 为空，无法播放动画。");
+            return;
+        }
+
+        // 过滤掉空元素
+        List<AnimationClip> validClips = clips.FindAll(c => c != null);
+
+        if (validClips.Count == 0)
+        {
+            Debug.LogWarning("[Player_Controller] 所有 AnimationClip 都为空。");
+            return;
+        }
+
+        // 传入 controller，内部自己创建 mixer 输入数量 = validClips.Count
+        animation_Contorller.PlayBlendAnimation(validClips, speed, transitionFixedTime);
+
+    }
+
+    /// <summary>
+    /// 设置blend动画的权重（多个）
+    /// </summary>
+    /// <param name="clip1Weight"></param>
+    public void SetBlendWeight(List<float> weightList)
+    {
+        animation_Contorller.SetBlendWeight(weightList);
+    }
+
+
     /// <summary>启用 Walk/Run 的相位锁（可选初相位）。</summary>
     public void EnableBlendPhaseLock(float? initPhase01 = null) => animation_Contorller.EnablePhaseLockForWalkRun(initPhase01);
 
@@ -218,33 +277,78 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
     private void Update()
     {
         // =========================
-        // 1) 移动（每帧轮询 Vector2）
+        // 1) 移动（相机朝向；键盘可切换 Walk/Run）
         // =========================
-        Vector2 move2D = _moveAction.ReadValue<Vector2>(); // (-1..1, -1..1)
+        Vector2 move = _moveAction.ReadValue<Vector2>();
+        float mag = Mathf.Clamp01(move.magnitude);
 
-        // 由输入合成世界空间移动方向
-        Vector3 moveDir = new Vector3(move2D.x, 0f, move2D.y);
+        // 判断输入设备
+        var activeDev = _moveAction.activeControl != null ? _moveAction.activeControl.device : null;
+        if (activeDev != null && mag > 0f)
+            _lastMoveWasKeyboard = activeDev is Keyboard;
 
-        // 若角色挂有 cameraTransform，则将移动方向“相对相机”旋转
-        if (ecmcharacter.camera)
-            moveDir = moveDir.relativeTo(ecmcharacter.cameraTransform, ecmcharacter.GetUpVector());
+        // 相机方向
+        Transform camT = freeLookCam != null ? freeLookCam.transform :
+                         (Camera.main != null ? Camera.main.transform : transform);
 
-        // 交给 ECM2（物理加速度、阻尼、地面约束等都由 ECM2 处理）
-        ecmcharacter.SetMovementDirection(moveDir);
+        Vector3 camForward = Vector3.ProjectOnPlane(camT.forward, Vector3.up).normalized;
+        Vector3 camRight = Vector3.ProjectOnPlane(camT.right, Vector3.up).normalized;
 
-        // =========================
-        // 2) 缩放（Mouse Scroll / Gamepad D-Pad）
-        // Zoom 在 InputControls 中是 Vector2（Mouse/scroll 与 Gamepad/dpad），只取 y 分量
-        // =========================
-        Vector2 zoom2D = _zoomAction.ReadValue<Vector2>();
-        float zoomY = zoom2D.y;
+        Vector3 wishDir = (camForward * move.y + camRight * move.x);
+        if (wishDir.sqrMagnitude > 0f) wishDir.Normalize();
 
-        if (Mathf.Abs(zoomY) > 0.0001f && freeLookCam != null)
+        // 速度占比
+        float speedRatio = 0f;
+        if (_lastMoveWasKeyboard)
         {
-            float newFOV = Mathf.Clamp(
-                freeLookCam.Lens.FieldOfView - zoomY * zoomSensitivity,
-                10f, 40f  // 可调
-            );
+            // 键盘：用当前切换状态
+            if (mag > 0f)
+                speedRatio = _walkToggle ? walkSpeedRadio : 1f;
+        }
+        else
+        {
+            // 手柄：按摇杆幅度线性混合
+            if (mag > 0f)
+            {
+                if (mag <= walkHold)
+                    speedRatio = walkSpeedRadio;
+                else
+                {
+                    float t = Mathf.InverseLerp(walkHold, 1f, mag);
+                    speedRatio = Mathf.Lerp(walkSpeedRadio, 1f, t);
+                }
+            }
+        }
+
+        Vector3 movementDirection = wishDir * speedRatio;
+        ecmcharacter.SetMovementDirection(movementDirection);
+
+        // =========================
+        // 2) 缩放（Mouse Scroll / InputActions ZoomIn & ZoomOut）
+        // =========================
+        if (freeLookCam != null)
+        {
+            float newFOV = freeLookCam.Lens.FieldOfView;
+
+            // ① 鼠标滚轮（仍然支持）
+            Vector2 zoom2D = _zoomAction.ReadValue<Vector2>();
+            float zoomY = zoom2D.y;
+            if (Mathf.Abs(zoomY) > 0.001f)
+                newFOV -= zoomY * zoomSensitivity;
+
+            // ② 手柄组合键（ZoomIn / ZoomOut 持续触发）
+            bool zoomInPressed = _zoomInAction.IsPressed();
+            bool zoomOutPressed = _zoomOutAction.IsPressed();
+
+            float delta = gamepadZoomSpeed * zoomSensitivity * Time.deltaTime;
+
+            if (zoomInPressed)   // 按住 ZoomIn（LB+RT）
+                newFOV -= delta;
+            if (zoomOutPressed)  // 按住 ZoomOut（LB+LT）
+                newFOV += delta;
+
+            // ③ 限制范围并应用
+            newFOV = Mathf.Clamp(newFOV, minFOV, maxFOV);
             freeLookCam.Lens.FieldOfView = newFOV;
         }
     }
@@ -267,6 +371,14 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
     {
         // 松开 → 可变跳高（更短的上升）
         ecmcharacter.StopJumping();
+    }
+
+    // ----------------------------------------------------------------
+    // 输入事件：键盘走跑切换
+    // ----------------------------------------------------------------
+    private void OnMoveSwitch(InputAction.CallbackContext ctx)
+    {
+        _walkToggle = !_walkToggle;
     }
 
 }

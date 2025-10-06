@@ -6005,7 +6005,7 @@ MonoBehaviour:
       distanceCullingFadeRatio: 0.2
       distanceCullingReferenceObject: {fileID: 0}
     normalAxis: 1
-    gravity: 4
+    gravity: 9.8
     gravityDirection:
       x: 0
       y: -1
@@ -6128,7 +6128,7 @@ MonoBehaviour:
     angleRestorationConstraint:
       useAngleRestoration: 1
       stiffness:
-        value: 0.15
+        value: 1
         useCurve: 1
         curve:
           serializedVersion: 2
@@ -6137,16 +6137,16 @@ MonoBehaviour:
             time: 0
             value: 1
             inSlope: 0
-            outSlope: -0.7
+            outSlope: 0
             tangentMode: 0
             weightedMode: 0
             inWeight: 0
             outWeight: 0
           - serializedVersion: 3
             time: 1
-            value: 0.3
+            value: 0.76224977
             inSlope: -0.7
-            outSlope: 0
+            outSlope: -0.7
             tangentMode: 0
             weightedMode: 0
             inWeight: 0
@@ -6167,17 +6167,17 @@ MonoBehaviour:
           - serializedVersion: 3
             time: 0
             value: 1
-            inSlope: -0.5047188
-            outSlope: -0.5047188
+            inSlope: -0.17453384
+            outSlope: -0.17453384
             tangentMode: 34
             weightedMode: 0
             inWeight: 0
             outWeight: 0.33333334
           - serializedVersion: 3
             time: 1
-            value: 0.49528122
-            inSlope: -0.5047188
-            outSlope: -0.5047188
+            value: 0.82546616
+            inSlope: -0.17453384
+            outSlope: -0.17453384
             tangentMode: 34
             weightedMode: 0
             inWeight: 0.33333334
@@ -6185,7 +6185,7 @@ MonoBehaviour:
           m_PreInfinity: 2
           m_PostInfinity: 2
           m_RotationOrder: 4
-      stiffness: 0.5
+      stiffness: 0.75
     motionConstraint:
       useMaxDistance: 0
       maxDistance:
@@ -6248,7 +6248,8 @@ MonoBehaviour:
     colliderCollisionConstraint:
       mode: 1
       friction: 0.05
-      colliderList: []
+      colliderList:
+      - {fileID: 0}
       collisionBones: []
       limitDistance:
         value: 0.05
@@ -7018,12 +7019,12 @@ MonoBehaviour:
       inertiaCenter: 1
       customSkinningBone: 1
   animationPoseRatioProperty: 0
-  gravityProperty: 0
-  dampingProperty: 0
-  worldInertiaProperty: 0
-  localInertiaProperty: 0
-  windInfluenceProperty: 0
-  blendWeightProperty: 0
+  gravityProperty: 6
+  dampingProperty: 0.1
+  worldInertiaProperty: 1
+  localInertiaProperty: 1
+  windInfluenceProperty: 1
+  blendWeightProperty: 1
 --- !u!1 &3330292758601456873
 GameObject:
   m_ObjectHideFlags: 0
@@ -7263,6 +7264,58 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   center: {x: 0, y: -0.03, z: 0}
   size: {x: 0.167, y: 0.05, z: 0.001}
+  symmetryMode: 0
+  symmetryTarget: {fileID: 0}
+  direction: 1
+  reverseDirection: 0
+  radiusSeparation: 0
+  alignedOnCenter: 1
+--- !u!1 &4017360638792535991
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 380262777363213676}
+  - component: {fileID: 412953111379217821}
+  m_Layer: 0
+  m_Name: Magica Capsule Collider (Head)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &380262777363213676
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4017360638792535991}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.0242, z: 0.0064}
+  m_LocalScale: {x: 0.9999994, y: 0.99999976, z: 0.99999917}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2536901929365349759}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &412953111379217821
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4017360638792535991}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6f5338a96461264fb9a1132c8509672, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  center: {x: 0, y: 0.05, z: 0}
+  size: {x: 0.07, y: 0.05, z: 0.001}
   symmetryMode: 0
   symmetryTarget: {fileID: 0}
   direction: 1
@@ -12894,6 +12947,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -6579237071725840201, guid: 97033277aeaa0de4f9d90512dc448e6e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8749241747600819106}
+    - targetCorrespondingSourceObject: {fileID: -6579237071725840201, guid: 97033277aeaa0de4f9d90512dc448e6e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 380262777363213676}
     - targetCorrespondingSourceObject: {fileID: -613946471792492346, guid: 97033277aeaa0de4f9d90512dc448e6e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3471197107958903190}
@@ -14454,9 +14510,9 @@ MonoBehaviour:
   UseWaving: 1
   CosinusAdd: 0
   FixedCycle: 0
-  WavingSpeed: 2
-  WavingRange: 2
-  WavingAxis: {x: 2, y: 0.5, z: 0.3}
+  WavingSpeed: 1.5
+  WavingRange: 1.5
+  WavingAxis: {x: 1.5, y: 0.5, z: 0.3}
   WavingType: 1
   AlternateWave: 1
   UseWind: 0
@@ -14897,7 +14953,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   DeflectOnlyCollisions: 1
   _Editor_Category: 2
-  _Editor_FeaturesCategory: 2
+  _Editor_FeaturesCategory: 0
   DrawGizmos: 1
   StartBone: {fileID: 6602204474408609957}
   EndBone: {fileID: 4675447158228996792}

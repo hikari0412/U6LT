@@ -102,6 +102,11 @@ MonoBehaviour:
   animation_Contorller: {fileID: 3541950296266014840}
   shSariaConfig: {fileID: 11400000, guid: 3deab89d27b5dcb4da2c10fd06f482b6, type: 2}
   modelTransform: {fileID: 8926723016779429712}
+  freeLookCam: {fileID: 0}
+  zoomSensitivity: 1
+  gamepadZoomSpeed: 40
+  minFOV: 6
+  maxFOV: 40
 --- !u!114 &7164731542498921824
 MonoBehaviour:
   m_ObjectHideFlags: 0

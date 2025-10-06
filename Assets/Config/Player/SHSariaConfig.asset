@@ -16,9 +16,9 @@ MonoBehaviour:
     SerializedFormat: 2
     SerializedBytes: 
     ReferencedUnityObjects:
-    - {fileID: -6460773127892786900, guid: fec79e9403d52e94c894a3c8fc5aa556, type: 3}
-    - {fileID: -6627651325548658618, guid: fec79e9403d52e94c894a3c8fc5aa556, type: 3}
-    - {fileID: -8045912840742249305, guid: fec79e9403d52e94c894a3c8fc5aa556, type: 3}
+    - {fileID: 3881914516496145457, guid: 6be33ef3457cdd041aa577e7570eb7fb, type: 3}
+    - {fileID: -7374226881450746781, guid: 6be33ef3457cdd041aa577e7570eb7fb, type: 3}
+    - {fileID: -7893215791471557381, guid: 6be33ef3457cdd041aa577e7570eb7fb, type: 3}
     - {fileID: 7400040, guid: 5eaab4c94e2c4224dbde8bf202505a4f, type: 3}
     - {fileID: 7400038, guid: 5eaab4c94e2c4224dbde8bf202505a4f, type: 3}
     - {fileID: 7400044, guid: 5eaab4c94e2c4224dbde8bf202505a4f, type: 3}
@@ -119,7 +119,6 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
-  walkSpeed: 1
   walkHold: 0.5
-  runSpeed: 3
+  walkSpeedRadio: 0.3
   rotateSpeed: 10

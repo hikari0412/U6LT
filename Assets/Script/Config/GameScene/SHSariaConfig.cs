@@ -10,19 +10,19 @@ using Sirenix.OdinInspector;
 
 public class SHSariaConfig : ConfigBase
 {
-    public float walkSpeed;
-    [PropertySpace(SpaceAfter = 10)]  
+
 
     [InfoBox("摇杆推动幅度小于walkHold时保持100%walk状态", InfoMessageType.Info)]
     public float walkHold;
     [PropertySpace(SpaceAfter = 10)]  
 
-    [InfoBox("Run Speed要与player物体上挂的ECM2 Character中的Max Walk Speed保持一致", InfoMessageType.Info)]
-    public float runSpeed;
-    [PropertySpace(SpaceAfter = 10)]  
+    [InfoBox("walk速度为run速度的多少倍（须小于1），根据不同walk/run动画调整", InfoMessageType.Info)]
+    public float walkSpeedRadio;
 
+    [InfoBox("转身速度", InfoMessageType.Info)]
     public float rotateSpeed;
     [PropertySpace(SpaceAfter = 10)]  
+
     public Dictionary<string, AnimationClip> StandAnimationDic;
 
     public AnimationClip GetAnimationByName(string animationName)
