@@ -4,6 +4,8 @@ using UnityEngine.InputSystem;
 using ECM2;
 using Unity.Cinemachine;
 using System.Collections.Generic;
+using System.Collections;
+using System;
 
 public class Player_Controller : SingletonMono<Player_Controller>, IStateMachineOwner
 {
@@ -13,10 +15,30 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
     private float walkSpeedRadio => shSariaConfig != null ? shSariaConfig.walkSpeedRadio : 0.5f; //walkSpeed只读，外部无法随意修改，如果没填就取1
     private float walkHold => shSariaConfig != null ? shSariaConfig.walkHold : 0.5f;
 
+
+    // 你的运动快照（供所有状态读取）
+    public MotionSnapshot CurrentMotion { get; private set; }
+
+    // ---------------------------
+    // 用于update采集玩家意图的参数
+    // ---------------------------
+    private Vector3 _wishDirWorld = Vector3.zero;//意图移动的方向
+    private float _speedRatio = 0f;//速度比例
+    private bool _lastMoveWasKeyboard = true;//上一次的移动方式是否为键盘（用于判断是否切换）
+    private bool _jumpPressedFlag = false;// 本帧是否按下了跳跃（供快照使用，写完即清）
+    bool _jumpConsumed;        // 跳跃意图是否已消费（避免多次）
+    private float _jumpBufferTimer = 0f; //跳跃土狼时间计时器（用于判断是否触发跳跃）
+    private const float JUMP_BUFFER_TIME = 0.12f;//跳跃土狼时间（即离开地面一小段时间内仍可触发跳跃动作）   
+    private bool _prevGrounded = false;// 上一物理步是否在地面（用于落地沿边缘检测）
+
+    // —— 阈值（迟滞，防抖）——
+    const float START_MOVE = 0.06f;  // Idle -> Move
+    const float STOP_MOVE = 0.03f;  // Move -> Idle
+
     [SerializeField] private Transform modelTransform;//把模型部分拖进来，以防旋转等影响player controller
     public Transform ModelTransform => modelTransform;
-    private StateMachine stateMachine;
-    private PlayerState playerState; // 玩家的当前状态标识
+    private StateMachine stateMachine;// JKFrame 的状态机实例
+    private PlayerState currnetPlayerState; // 玩家的当前状态标识
 
 
     // ---------------------------
@@ -58,7 +80,64 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
     private InputAction _zoomInAction;
     private InputAction _zoomOutAction;
     private bool _walkToggle = false;
-    private bool _lastMoveWasKeyboard = false;
+
+
+    /// <summary>
+    /// 读取ECM2的物理状态等，记入MotionSnapshot
+    /// </summary>
+    private void BuildSnapshotFromECM2()
+    {
+        // 读取 ECM2 的真实速度
+        Vector3 v = ecmcharacter.GetVelocity();
+
+        // —— 填充快照 —— 
+        MotionSnapshot motionSS = CurrentMotion; // 在原有基础上更新，保留上一帧的帧事件等
+
+        // 速度与方向
+        motionSS.speedWorld = v;
+        motionSS.speedLocal = transform.InverseTransformDirection(v);
+        motionSS.speedY = v.y;
+
+        Vector3 vXZ = v; vXZ.y = 0f;
+        motionSS.speedXZ = vXZ.magnitude;
+
+        // 速度比例（0..1，仅看水平速度）
+        float maxSpd = Mathf.Max(0.0001f, ecmcharacter.GetMaxSpeed());
+        motionSS.speedRadio = Mathf.InverseLerp(0f, maxSpd, motionSS.speedXZ);
+
+        // 地面/下落
+        motionSS.isGrounded = ecmcharacter.IsGrounded();
+        motionSS.isFalling = ecmcharacter.IsFalling();
+
+        //坡度角（暂时搁置）
+
+        // 本地输入方向（来自 ECM2 的 MovementDirection；去Y并归一）
+        Vector3 wishWorld = ecmcharacter.GetMovementDirection();
+        Vector3 wishLocal = transform.InverseTransformDirection(wishWorld);
+        wishLocal.y = 0f;
+        if (wishLocal.sqrMagnitude > 1e-6f) wishLocal.Normalize();
+        motionSS.wishDirLocal = wishLocal;
+
+        // 推断是否处于“跑档”（相对你配置的 walkSpeedRadio 给个小裕量）
+        motionSS.runHeld = motionSS.speedRadio > (walkSpeedRadio + 0.05f);
+
+        // 本帧是否按下跳跃（来自输入事件的一次性标记）
+        motionSS.jumpBottonDown = _jumpPressedFlag;
+
+        // 帧事件：起跳/落地
+        // - 起跳：优先由输入事件标记
+        motionSS.justJumped = motionSS.justJumped || _jumpPressedFlag;
+        // - 落地：上一帧不在地面，这一帧在地面
+        motionSS.justLanded = !_prevGrounded && motionSS.isGrounded;
+
+        // 预落地（可选：留给你后续用射线/球体预测后写入）
+        motionSS.preLand = motionSS.preLand && !motionSS.isGrounded; // 例如：着地后自动清
+
+        // 写回、清一次性标记
+        CurrentMotion = motionSS;
+        _jumpPressedFlag = false;
+        _prevGrounded = motionSS.isGrounded;
+    }
 
     private void Awake()
     {
@@ -94,6 +173,8 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
     {
         _input.Enable();
 
+        ecmcharacter.CharacterMovementUpdated += OnCharacterMovementUpdated;
+
         // 跳跃：按下=Jump，松开=StopJumping（支持可变跳高）
         _jumpAction.performed += OnJumpPerformed;
         _jumpAction.canceled += OnJumpCanceled;
@@ -106,6 +187,8 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
 
     private void OnDisable()
     {
+        ecmcharacter.CharacterMovementUpdated -= OnCharacterMovementUpdated;
+
         _jumpAction.performed -= OnJumpPerformed;
         _jumpAction.canceled -= OnJumpCanceled;
 
@@ -120,7 +203,14 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
     private void Start()
     {
         Init();
+        stateMachine = ResSystem.GetOrNew<StateMachine>();
+        // 初始化并进入默认 Idle（JKFrame 文档推荐做法）
+        stateMachine.Init<Player_IdleState>(this);
     }
+
+    /// <summary>
+    /// 初始化
+    /// </summary>
     public void Init()
     {
         // 1) 先初始化动画控制器（若你在 Animation_Contorller 里有 Init 方法的话）
@@ -146,13 +236,177 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
         }
     }
 
+
+    /// <summary>
+    /// update中仅采集玩家输入的意图，不做物理运算
+    /// </summary>
+    private void Update()
+    {
+        // =========================1) 移动意图（相机朝向；键盘可切换 Walk/Run）=========================
+        // 读取玩家输入
+        Vector2 move = _moveAction.ReadValue<Vector2>();
+        float mag = Mathf.Clamp01(move.magnitude);
+
+        // 记录最近输入设备（仅在有输入时更新）
+        var activeDev = _moveAction.activeControl != null ? _moveAction.activeControl.device : null;
+        if (activeDev != null && mag > 0f)
+            _lastMoveWasKeyboard = activeDev is Keyboard;
+
+        // 相机平面方向
+        Transform camT = freeLookCam != null ? freeLookCam.transform :
+                         (Camera.main != null ? Camera.main.transform : transform);
+
+        Vector3 camForward = Vector3.ProjectOnPlane(camT.forward, Vector3.up).normalized;
+        Vector3 camRight = Vector3.ProjectOnPlane(camT.right, Vector3.up).normalized;
+
+        // 期望方向（世界，y=0）
+        Vector3 wishDir = (camForward * move.y + camRight * move.x);
+        if (wishDir.sqrMagnitude > 0f) wishDir.Normalize();
+        _wishDirWorld = wishDir;
+
+        // 速度占比（键盘：Walk/Run 开关；手柄：摇杆幅度混合）
+        float speedRatio = 0f;
+        if (_lastMoveWasKeyboard)
+        {
+            // 键盘：用当前切换状态
+            if (mag > 0f)
+                speedRatio = _walkToggle ? walkSpeedRadio : 1f;
+        }
+        else
+        {
+            // 手柄：按摇杆幅度线性混合
+            if (mag > 0f)
+            {
+                if (mag <= walkHold)
+                    speedRatio = walkSpeedRadio;
+                else
+                {
+                    float t = Mathf.InverseLerp(walkHold, 1f, mag);
+                    speedRatio = Mathf.Lerp(walkSpeedRadio, 1f, t);
+                }
+            }
+        }
+        _speedRatio = speedRatio;
+
+        // =========================2) 缩放（Mouse Scroll / InputActions ZoomIn & ZoomOut）=========================
+        // 
+        // 
+        if (freeLookCam != null)
+        {
+            float newFOV = freeLookCam.Lens.FieldOfView;
+
+            // ① 鼠标滚轮（仍然支持）
+            Vector2 zoom2D = _zoomAction.ReadValue<Vector2>();
+            float zoomY = zoom2D.y;
+            if (Mathf.Abs(zoomY) > 0.001f)
+                newFOV -= zoomY * zoomSensitivity;
+
+            // ② 手柄组合键（ZoomIn / ZoomOut 持续触发）
+            bool zoomInPressed = _zoomInAction.IsPressed();
+            bool zoomOutPressed = _zoomOutAction.IsPressed();
+
+            float delta = gamepadZoomSpeed * zoomSensitivity * Time.deltaTime;
+
+            if (zoomInPressed)   // 按住 ZoomIn（LB+RT）
+                newFOV -= delta;
+            if (zoomOutPressed)  // 按住 ZoomOut（LB+LT）
+                newFOV += delta;
+
+            // ③ 限制范围并应用
+            newFOV = Mathf.Clamp(newFOV, minFOV, maxFOV);
+            freeLookCam.Lens.FieldOfView = newFOV;
+        }
+
+    }
+
+    /// <summary>
+    /// 把update中采集到的玩家意图传给ECM2并做物理运算
+    /// </summary>
+    private void FixedUpdate()
+    {
+        //把移动传给ECM2
+        Vector3 movementDirection = _wishDirWorld * _speedRatio;
+        ecmcharacter.SetMovementDirection(movementDirection);
+    }
+
+    private void OnCharacterMovementUpdated(float deltaTime)
+    {
+        BuildSnapshotFromECM2();
+        var next = DecideState(CurrentMotion);
+        if (next != currnetPlayerState)
+        {
+            ChangeState(next);
+        }
+    }
+
+    /// <summary>
+    /// 判断角色的ECM2物理状态并切换动画的State
+    /// </summary>
+    private PlayerState DecideState(MotionSnapshot motionSS)
+    {
+        // 不在地面
+        if (!motionSS.isGrounded)
+            return PlayerState.Air;
+
+        // 在地面
+        switch (currnetPlayerState)
+        {
+            case PlayerState.Idle:
+                if (motionSS.speedXZ >= START_MOVE) return PlayerState.Move;
+                break;
+
+            case PlayerState.Move:
+                if (motionSS.speedXZ <= STOP_MOVE) return PlayerState.Idle;
+                break;
+
+            case PlayerState.Air:
+                // 保险：从空中回地面
+                return (motionSS.speedXZ >= START_MOVE) ? PlayerState.Move : PlayerState.Idle;
+        }
+
+        // 灰区：保持当前，确保所有路径都有返回
+        return currnetPlayerState;
+    }
+
+    // ----------------------------------------------------------------
+    // 输入事件：跳跃 
+    // ----------------------------------------------------------------
+
+    private void OnJumpPerformed(InputAction.CallbackContext ctx)
+    {
+        // 起跳前短暂停用贴地约束，避免“粘地”抵消垂直速度（可按项目需要开/关）
+        ecmcharacter.PauseGroundConstraint(0.12f);
+
+        // 触发 ECM2 的跳跃输入（ECM2 内部会在模拟阶段 DoJump）
+        ecmcharacter.Jump();
+
+        //记录本帧“按下跳跃”
+        _jumpPressedFlag = true;
+    }
+
+
+    private void OnJumpCanceled(InputAction.CallbackContext ctx)
+    {
+        // 松开 → 可变跳高（更短的上升）
+        ecmcharacter.StopJumping();
+        _jumpPressedFlag = false;
+    }
+
+    // ----------------------------------------------------------------
+    // 输入事件：键盘走跑切换
+    // ----------------------------------------------------------------
+    private void OnMoveSwitch(InputAction.CallbackContext ctx)
+    {
+        _walkToggle = !_walkToggle;
+    }
+
     /// <summary>
     /// 修改状态标识
     /// </summary>
     /// <param name="playerState"></param>
     public void ChangeState(PlayerState playerState)
     {
-        this.playerState = playerState;
+        this.currnetPlayerState = playerState;
         switch (playerState)
         {
             case PlayerState.Idle:
@@ -161,12 +415,18 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
             case PlayerState.Move:
                 stateMachine.ChangeState<Player_MoveState>();
                 break;
-            case PlayerState.Jump:
-                stateMachine.ChangeState<Player_JumpState>();
+            case PlayerState.Air:
+                stateMachine.ChangeState<Player_AirState>();
                 break;
             default:
                 break;
         }
+    }
+
+    private IEnumerator DelayedTime(float delay, Action action)
+    {
+        yield return new WaitForSeconds(delay);
+        action?.Invoke();
     }
 
     /// <summary>
@@ -273,112 +533,4 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
 
     /// <summary>关闭相位锁，恢复自动播放速度（默认1,1；如需自定义可传参）。</summary>
     public void DisableBlendPhaseLock(float s0 = 1f, float s1 = 1f) => animation_Contorller.DisablePhaseLockForWalkRun(s0, s1);
-
-    private void Update()
-    {
-        // =========================
-        // 1) 移动（相机朝向；键盘可切换 Walk/Run）
-        // =========================
-        Vector2 move = _moveAction.ReadValue<Vector2>();
-        float mag = Mathf.Clamp01(move.magnitude);
-
-        // 判断输入设备
-        var activeDev = _moveAction.activeControl != null ? _moveAction.activeControl.device : null;
-        if (activeDev != null && mag > 0f)
-            _lastMoveWasKeyboard = activeDev is Keyboard;
-
-        // 相机方向
-        Transform camT = freeLookCam != null ? freeLookCam.transform :
-                         (Camera.main != null ? Camera.main.transform : transform);
-
-        Vector3 camForward = Vector3.ProjectOnPlane(camT.forward, Vector3.up).normalized;
-        Vector3 camRight = Vector3.ProjectOnPlane(camT.right, Vector3.up).normalized;
-
-        Vector3 wishDir = (camForward * move.y + camRight * move.x);
-        if (wishDir.sqrMagnitude > 0f) wishDir.Normalize();
-
-        // 速度占比
-        float speedRatio = 0f;
-        if (_lastMoveWasKeyboard)
-        {
-            // 键盘：用当前切换状态
-            if (mag > 0f)
-                speedRatio = _walkToggle ? walkSpeedRadio : 1f;
-        }
-        else
-        {
-            // 手柄：按摇杆幅度线性混合
-            if (mag > 0f)
-            {
-                if (mag <= walkHold)
-                    speedRatio = walkSpeedRadio;
-                else
-                {
-                    float t = Mathf.InverseLerp(walkHold, 1f, mag);
-                    speedRatio = Mathf.Lerp(walkSpeedRadio, 1f, t);
-                }
-            }
-        }
-
-        Vector3 movementDirection = wishDir * speedRatio;
-        ecmcharacter.SetMovementDirection(movementDirection);
-
-        // =========================
-        // 2) 缩放（Mouse Scroll / InputActions ZoomIn & ZoomOut）
-        // =========================
-        if (freeLookCam != null)
-        {
-            float newFOV = freeLookCam.Lens.FieldOfView;
-
-            // ① 鼠标滚轮（仍然支持）
-            Vector2 zoom2D = _zoomAction.ReadValue<Vector2>();
-            float zoomY = zoom2D.y;
-            if (Mathf.Abs(zoomY) > 0.001f)
-                newFOV -= zoomY * zoomSensitivity;
-
-            // ② 手柄组合键（ZoomIn / ZoomOut 持续触发）
-            bool zoomInPressed = _zoomInAction.IsPressed();
-            bool zoomOutPressed = _zoomOutAction.IsPressed();
-
-            float delta = gamepadZoomSpeed * zoomSensitivity * Time.deltaTime;
-
-            if (zoomInPressed)   // 按住 ZoomIn（LB+RT）
-                newFOV -= delta;
-            if (zoomOutPressed)  // 按住 ZoomOut（LB+LT）
-                newFOV += delta;
-
-            // ③ 限制范围并应用
-            newFOV = Mathf.Clamp(newFOV, minFOV, maxFOV);
-            freeLookCam.Lens.FieldOfView = newFOV;
-        }
-    }
-
-
-    // ----------------------------------------------------------------
-    // 输入事件：跳跃 
-    // ----------------------------------------------------------------
-
-    private void OnJumpPerformed(InputAction.CallbackContext ctx)
-    {
-        // 起跳前短暂停用贴地约束，避免“粘地”抵消垂直速度（可按项目需要开/关）
-        ecmcharacter.PauseGroundConstraint(0.12f);
-
-        // 触发 ECM2 的跳跃输入（ECM2 内部会在模拟阶段 DoJump）
-        ecmcharacter.Jump();
-    }
-
-    private void OnJumpCanceled(InputAction.CallbackContext ctx)
-    {
-        // 松开 → 可变跳高（更短的上升）
-        ecmcharacter.StopJumping();
-    }
-
-    // ----------------------------------------------------------------
-    // 输入事件：键盘走跑切换
-    // ----------------------------------------------------------------
-    private void OnMoveSwitch(InputAction.CallbackContext ctx)
-    {
-        _walkToggle = !_walkToggle;
-    }
-
 }

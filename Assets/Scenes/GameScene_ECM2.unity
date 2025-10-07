@@ -17391,6 +17391,10 @@ PrefabInstance:
       propertyPath: _camera
       value: 
       objectReference: {fileID: 444466265}
+    - target: {fileID: 5979571547637049331, guid: 8c345df240232594a81ff64294be1cab, type: 3}
+      propertyPath: _canJumpWhileCrouching
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8917497831845962162, guid: 8c345df240232594a81ff64294be1cab, type: 3}
       propertyPath: 'serializeData.colliderCollisionConstraint.colliderList.Array.data[0]'
       value: 

@@ -10,5 +10,5 @@ public enum PlayerState
 {
     Idle,
     Move,
-    Jump,
+    Air,
 }
