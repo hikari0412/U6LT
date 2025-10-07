@@ -18,89 +18,52 @@ public class Player_MoveState : PlayerStateBase
 
     // 权重平滑时间常数（秒）
     private const float blendTau = 0.12f;
+    private bool hasStartedWalkRunAnim = false;
 
     public override void Init(IStateMachineOwner owner)
     {
         base.Init(owner);
-
-        // ecmCharacter = player.GetComponent<Character>();
-        // if (ecmCharacter == null)
-        // {
-        //     Debug.LogError("[MoveState] 请在 Player 上添加 ECM2.Character 组件。");
-        // }
-        // shSariaConfig = player.ShSariaConfig;
-        // input = new InputControls();
-
-        // moveAction = input.player.Move;
     }
 
     public override void Enter()
     {
 
-        // input?.Enable();
+        var motionSS = player.CurrentMotion;
+        if (motionSS.justLanded && motionSS.landHoldTime <= 0.15f)
+        {
+            player.PlayAnimation("JumpLand", 1f, false, 0.15f);
+            hasStartedWalkRunAnim = false;
+        }
+        else
+        {
+            player.PlayBlendAnimation("Walk", "Run", 1f, 0.25f);
+            player.SetBlendWeight(0f);
 
-        player.PlayBlendAnimation("Walk", "Run", 1f, 0.25f);
-        player.SetBlendWeight(0f);
+            player.EnableBlendPhaseLock();
+            hasStartedWalkRunAnim = true;
+        }
 
-        player.EnableBlendPhaseLock();
 
         Debug.Log("进入MoveState");
     }
 
     public override void Update()
     {
-        // float deltaTime = Time.deltaTime;
+        var motionSS = player.CurrentMotion;
+        if (!hasStartedWalkRunAnim && motionSS.landHoldTime > 0.15f)
+        {
+            player.PlayBlendAnimation("Walk", "Run", 1f, 0.25f);
+            player.SetBlendWeight(0f);
 
-        // Vector3 move = ecmCharacter.transform.InverseTransformDirection(ecmCharacter.GetMovementDirection());
-        // float forwardAmount = ecmCharacter.useRootMotion && ecmCharacter.GetRootMotionController()
-        //         ? move.z
-        //         : Mathf.InverseLerp(0.0f, ecmCharacter.GetMaxSpeed(), ecmCharacter.GetSpeed());
-
-        // // if (forwardAmount <= 0.05f)
-        // // {
-        // //     //切换状态
-        // //     player.ChangeState(PlayerState.Idle);
-        // //     player.DisableBlendPhaseLock();
-        // //     return;
-        // // }
-
-        // // === 根据ecm2的物理速度设置 Walk↔Run 混合比例 ===
-        // // 0..walkHold → 全 Walk；walkHold..1 → 线性过渡到 Run
-
-        // // 计算地面速度（忽略Y）
-        // Vector3 vel = ecmCharacter.GetVelocity();
-        // vel.y = 0f;
-        // float horizSpeed = vel.magnitude;
-        // float speedXZ = Mathf.InverseLerp(0f, ecmCharacter.GetMaxSpeed(), horizSpeed);  // 0..1
-        
-        // float speedRatio = Mathf.Clamp01(speedXZ);
-        // float runTarget = Mathf.Clamp01((speedRatio - walkHold) * 2f);
-        // float walkTarget = 1f - runTarget;
-
-        // // 平滑：指数平滑，避免权重剧变
-        // float blendSmoothFactor = 1f - Mathf.Exp(-deltaTime / blendTau);
-        // walkWeight = Mathf.Lerp(walkWeight, walkTarget, blendSmoothFactor);
-
-        // // 下发两路混合（只传第一路 Walk 的权重）
-        // player.SetBlendWeight(walkWeight);
-
-        // // 相位锁推进：用 Walk 权重作为推进/参考
-        // player.UpdateBlendPhaseLock(walkWeight);
-
-        // // === 平滑旋转模型（使用配置文件的 rotateSpeed） ===
-        // Quaternion targetRot = ecmCharacter.transform.rotation;
-
-        // player.ModelTransform.rotation = Quaternion.Slerp(
-        //     player.ModelTransform.rotation,
-        //     targetRot,
-        //     rotateSpeed * Time.deltaTime);
-
+            player.EnableBlendPhaseLock();
+            hasStartedWalkRunAnim = true;
+        }
         float dt = Time.deltaTime;
         var m = player.CurrentMotion;
 
         // 用“快照”里的速度比例（仅 XZ）做走↔跑混合
         float speedRatio = Mathf.Clamp01(m.speedRadio);       // 0..1
-        float runTarget  = Mathf.Clamp01((speedRatio - walkHold) * 2f);
+        float runTarget = Mathf.Clamp01((speedRatio - walkHold) * 2f);
         float walkTarget = 1f - runTarget;
 
         // 平滑

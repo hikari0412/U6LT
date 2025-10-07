@@ -25,7 +25,9 @@ public struct MotionSnapshot
     // === 帧事件（瞬时触发）===
     public bool justJumped;       // 这帧是否刚起跳
     public bool justLanded;       // 这帧是否刚落地
-
-    // （可扩展字段）
     public bool preLand;          // 即将落地（用于预判落地动画）
+
+    // === 计时 ===
+    public float airHoldTime;   // 离地持续时间
+    public float landHoldTime;  // 着地持续时间
 }

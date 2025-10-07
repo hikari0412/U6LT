@@ -10479,13 +10479,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1228427811}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.10917573, y: -0, z: -0, w: 0.9940225}
-  m_LocalPosition: {x: -8.63, y: 0.04, z: 2.16}
-  m_LocalScale: {x: 5, y: 1, z: 5}
+  m_LocalRotation: {x: -0.118943006, y: -0, z: -0, w: 0.9929011}
+  m_LocalPosition: {x: -8.63, y: 1.87, z: 9.4}
+  m_LocalScale: {x: 5, y: 0.36393, z: 18.01584}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: -12.536, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -13.662, y: 0, z: 0}
 --- !u!1 &1233454849
 GameObject:
   m_ObjectHideFlags: 0
@@ -17391,10 +17391,6 @@ PrefabInstance:
       propertyPath: _camera
       value: 
       objectReference: {fileID: 444466265}
-    - target: {fileID: 5979571547637049331, guid: 8c345df240232594a81ff64294be1cab, type: 3}
-      propertyPath: _canJumpWhileCrouching
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 8917497831845962162, guid: 8c345df240232594a81ff64294be1cab, type: 3}
       propertyPath: 'serializeData.colliderCollisionConstraint.colliderList.Array.data[0]'
       value: 

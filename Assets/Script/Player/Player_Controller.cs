@@ -130,6 +130,21 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
         // - 落地：上一帧不在地面，这一帧在地面
         motionSS.justLanded = !_prevGrounded && motionSS.isGrounded;
 
+        // === 计时：AirHold & LandHold ===
+        float dt = Time.deltaTime;  // 或 Time.fixedDeltaTime，看你在哪调用
+        if (!motionSS.isGrounded)
+        {
+            // 在空中：累计离地时间，清空落地计时
+            motionSS.airHoldTime += dt;
+            motionSS.landHoldTime = 0f;
+        }
+        else
+        {
+            // 在地面：累计落地时间，清空离地计时
+            motionSS.landHoldTime += dt;
+            motionSS.airHoldTime = 0f;
+        }
+
         // 预落地（可选：留给你后续用射线/球体预测后写入）
         motionSS.preLand = motionSS.preLand && !motionSS.isGrounded; // 例如：着地后自动清
 

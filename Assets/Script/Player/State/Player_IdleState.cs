@@ -10,27 +10,26 @@ public class Player_IdleState : PlayerStateBase
     private InputAction moveAction;   // player/Move
     private SHSariaConfig shSariaConfig;
 
+    private bool hasStartedIdleAnim = false;
+
     public override void Init(IStateMachineOwner owner)
     {
-
         base.Init(owner);
-
-        // ecmCharacter = player.GetComponent<Character>();
-        // if (ecmCharacter == null)
-        // {
-        //     Debug.LogError("[MoveState] 请在 Player 上添加 ECM2.Character 组件。");
-        // }
-        // shSariaConfig = player.ShSariaConfig;
-        // input = new InputControls();
-
-        // moveAction = input.player.Move;
     }
 
     public override void Enter()
     {
-        // input?.Enable();
-
-        player.PlayAnimation("Idle", 1f, false, 0.5f);
+        var motionSS = player.CurrentMotion;
+        if (motionSS.justLanded && motionSS.landHoldTime <= 0.15f)
+        {
+            player.PlayAnimation("JumpLand", 1f, false, 0.15f);
+            hasStartedIdleAnim = false;
+        }
+        else
+        {
+            player.PlayAnimation("Idle", 1f, false, 0.25f);
+            hasStartedIdleAnim = true;
+        }
 
         Debug.Log("进入IdleState");
 
@@ -38,24 +37,11 @@ public class Player_IdleState : PlayerStateBase
 
     public override void Update()
     {
-        // float deltaTime = Time.deltaTime;
-
-        // Vector3 move = ecmCharacter.transform.InverseTransformDirection(ecmCharacter.GetMovementDirection());
-        // float forwardAmount = ecmCharacter.useRootMotion && ecmCharacter.GetRootMotionController()
-        //         ? move.z
-        //         : Mathf.InverseLerp(0.0f, ecmCharacter.GetMaxSpeed(), ecmCharacter.GetSpeed());
-        
-        // // 计算地面速度（忽略Y）
-        // Vector3 vel = ecmCharacter.GetVelocity();
-        // vel.y = 0f;
-        // float horizSpeed = vel.magnitude;
-        // float speedXZ = Mathf.InverseLerp(0f, ecmCharacter.GetMaxSpeed(), horizSpeed);  // 0..1
-
-        // if (speedXZ >= 0.05f)
-        // {
-        //     //切换状态
-        //     player.ChangeState(PlayerState.Move);
-        //     return;
-        // }
+        var motionSS = player.CurrentMotion;
+        if (!hasStartedIdleAnim && motionSS.landHoldTime > 0.15f)
+        {
+            player.PlayAnimation("Idle", 1f, false, 0.25f);
+            hasStartedIdleAnim = true;
+        }
     }
 }
