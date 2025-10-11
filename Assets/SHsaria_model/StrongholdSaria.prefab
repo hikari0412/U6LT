@@ -6249,7 +6249,7 @@ MonoBehaviour:
       mode: 1
       friction: 0.05
       colliderList:
-      - {fileID: 0}
+      - {fileID: 412953111379217821}
       collisionBones: []
       limitDistance:
         value: 0.05

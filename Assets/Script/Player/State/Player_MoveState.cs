@@ -18,6 +18,8 @@ public class Player_MoveState : PlayerStateBase
 
     // 权重平滑时间常数（秒）
     private const float blendTau = 0.12f;
+
+    //动画播放标记
     private bool hasStartedWalkRunAnim = false;
 
     public override void Init(IStateMachineOwner owner)

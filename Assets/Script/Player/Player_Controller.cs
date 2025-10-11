@@ -392,11 +392,18 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
         // 起跳前短暂停用贴地约束，避免“粘地”抵消垂直速度（可按项目需要开/关）
         ecmcharacter.PauseGroundConstraint(0.12f);
 
+        ecmcharacter.useRootMotion = true;
+        Debug.Log("useRootMotin:" + ecmcharacter.useRootMotion.ToString());
+
         // 触发 ECM2 的跳跃输入（ECM2 内部会在模拟阶段 DoJump）
         ecmcharacter.Jump();
 
         //记录本帧“按下跳跃”
         _jumpPressedFlag = true;
+        ecmcharacter.useRootMotion = false;
+        Debug.Log("useRootMotin:" + ecmcharacter.useRootMotion.ToString());
+
+        DoAfter(0.5f, () => ecmcharacter.useRootMotion = false);
     }
 
 
@@ -438,7 +445,13 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
         }
     }
 
-    private IEnumerator DelayedTime(float delay, Action action)
+    //通用延迟函数
+    private void DoAfter(float delay, Action action)
+    {
+        StartCoroutine(DoAfterCoroutine(delay, action));
+    }
+
+    private IEnumerator DoAfterCoroutine(float delay, Action action)
     {
         yield return new WaitForSeconds(delay);
         action?.Invoke();
