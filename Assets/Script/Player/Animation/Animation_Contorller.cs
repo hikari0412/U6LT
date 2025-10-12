@@ -332,6 +332,70 @@ public class Animation_Contorller : MonoBehaviour
     }
     #endregion
 
+    #region ====================================== 动画事件 ======================================
+
+    private Dictionary<string, Action> eventDic = new Dictionary<string, Action>();
+
+    public void AnimationEvent(string eventName)
+    {
+        if (string.IsNullOrEmpty(eventName))
+        {
+            Debug.LogWarning("[AnimEvent] empty name");
+            return;
+        }
+
+        if (!eventDic.TryGetValue(eventName, out var action) || action == null)
+        {
+            Debug.LogWarning($"[AnimEvent] no handler for '{eventName}'");
+            return;
+        }
+
+        try
+        {
+            action();  // 如果回调出错，会在这里报行号
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"[AnimEvent] handler '{eventName}' threw: {ex}");
+        }
+    }
+
+    //添加事件
+    public void AddAnimationEvent(string eventName, Action action)
+    {
+        if (eventDic.TryGetValue(eventName, out Action _action))
+        {
+            _action += action;
+        }
+        else
+        {
+            eventDic.Add(eventName, action);
+        }
+    }
+
+    //仅移除本事件（一个）
+    public void RemoveAnimationEvent(string eventName, Action action)
+    {
+        if (eventDic.TryGetValue(eventName, out Action _action))
+        {
+            _action -= action;
+        }
+    }
+
+    //移除事件（不允许再触发此事件）
+    public void RemoveAnimationEvent(string eventName)
+    {
+        eventDic.Remove(eventName);
+    }
+
+    //删除所有的事件
+    public void ClearAllActionEvent()
+    {
+        eventDic.Clear();
+    }
+
+    #endregion
+
     #region ====================================== RootMotion 回调（可选） ======================================
     private Action<Vector3, Quaternion> rootMotionAction;
     private void OnAnimatorMove()

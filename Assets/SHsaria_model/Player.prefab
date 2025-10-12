@@ -130,7 +130,7 @@ MonoBehaviour:
   _perchAdditionalHeight: 0.4
   _slopeLimitOverride: 0
   _useFlatTop: 0
-  _useFlatBaseForGroundChecks: 0
+  _useFlatBaseForGroundChecks: 1
   _collisionLayers:
     serializedVersion: 2
     m_Bits: 128

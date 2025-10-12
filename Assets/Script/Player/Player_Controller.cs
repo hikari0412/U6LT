@@ -9,14 +9,20 @@ using System;
 
 public class Player_Controller : SingletonMono<Player_Controller>, IStateMachineOwner
 {
+
+#region =================1. 角色与基础配置=====================
+// 说明：包含角色控制核心组件、速度参数、状态机引用等
+
     [SerializeField] Animation_Contorller animation_Contorller;
+    private Animator animator;  
+    public Animator Animator => animator; // 只读属性
     [SerializeField] private SHSariaConfig shSariaConfig;
     public SHSariaConfig ShSariaConfig => shSariaConfig;// 方便外部访问配置
     private float walkSpeedRadio => shSariaConfig != null ? shSariaConfig.walkSpeedRadio : 0.5f; //walkSpeed只读，外部无法随意修改，如果没填就取1
     private float walkHold => shSariaConfig != null ? shSariaConfig.walkHold : 0.5f;
 
 
-    // 你的运动快照（供所有状态读取）
+    // 运动快照（供所有状态读取）
     public MotionSnapshot CurrentMotion { get; private set; }
 
     // ---------------------------
@@ -39,12 +45,13 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
     public Transform ModelTransform => modelTransform;
     private StateMachine stateMachine;// JKFrame 的状态机实例
     private PlayerState currnetPlayerState; // 玩家的当前状态标识
+#endregion
 
 
-    // ---------------------------
+#region =================2. 摄像机设置=====================
+// 说明：包含自由视角相机引用与FOV缩放相关参数
+
     // 摄像机控制参数
-    // ---------------------------
-
     [Header("Camera Settings")]
 
     // 成员变量（可序列化引用或在 Awake/Start 里 GetComponent）
@@ -60,12 +67,11 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
 
     [Tooltip("最大FOV（值越大视角越远）")]
     [SerializeField] private float maxFOV = 40f;
+#endregion
 
 
-    // ---------------------------
-    // 角色与输入
-    // ---------------------------
-
+#region =================3. 角色与输入动作=====================
+// 说明：包含ECM2角色、Input System输入动作及相关开关
     protected Character ecmcharacter;    // ECM2 角色
 
     // 新输入系统的包装类（由 Input System 生成）
@@ -80,79 +86,11 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
     private InputAction _zoomInAction;
     private InputAction _zoomOutAction;
     private bool _walkToggle = false;
+#endregion
 
 
-    /// <summary>
-    /// 读取ECM2的物理状态等，记入MotionSnapshot
-    /// </summary>
-    private void BuildSnapshotFromECM2()
-    {
-        // 读取 ECM2 的真实速度
-        Vector3 v = ecmcharacter.GetVelocity();
-
-        // —— 填充快照 —— 
-        MotionSnapshot motionSS = CurrentMotion; // 在原有基础上更新，保留上一帧的帧事件等
-
-        // 速度与方向
-        motionSS.speedWorld = v;
-        motionSS.speedLocal = transform.InverseTransformDirection(v);
-        motionSS.speedY = v.y;
-
-        Vector3 vXZ = v; vXZ.y = 0f;
-        motionSS.speedXZ = vXZ.magnitude;
-
-        // 速度比例（0..1，仅看水平速度）
-        float maxSpd = Mathf.Max(0.0001f, ecmcharacter.GetMaxSpeed());
-        motionSS.speedRadio = Mathf.InverseLerp(0f, maxSpd, motionSS.speedXZ);
-
-        // 地面/下落
-        motionSS.isGrounded = ecmcharacter.IsGrounded();
-        motionSS.isFalling = ecmcharacter.IsFalling();
-
-        //坡度角（暂时搁置）
-
-        // 本地输入方向（来自 ECM2 的 MovementDirection；去Y并归一）
-        Vector3 wishWorld = ecmcharacter.GetMovementDirection();
-        Vector3 wishLocal = transform.InverseTransformDirection(wishWorld);
-        wishLocal.y = 0f;
-        if (wishLocal.sqrMagnitude > 1e-6f) wishLocal.Normalize();
-        motionSS.wishDirLocal = wishLocal;
-
-        // 推断是否处于“跑档”（相对你配置的 walkSpeedRadio 给个小裕量）
-        motionSS.runHeld = motionSS.speedRadio > (walkSpeedRadio + 0.05f);
-
-        // 本帧是否按下跳跃（来自输入事件的一次性标记）
-        motionSS.jumpBottonDown = _jumpPressedFlag;
-
-        // 帧事件：起跳/落地
-        // - 起跳：优先由输入事件标记
-        motionSS.justJumped = motionSS.justJumped || _jumpPressedFlag;
-        // - 落地：上一帧不在地面，这一帧在地面
-        motionSS.justLanded = !_prevGrounded && motionSS.isGrounded;
-
-        // === 计时：AirHold & LandHold ===
-        float dt = Time.deltaTime;  // 或 Time.fixedDeltaTime，看你在哪调用
-        if (!motionSS.isGrounded)
-        {
-            // 在空中：累计离地时间，清空落地计时
-            motionSS.airHoldTime += dt;
-            motionSS.landHoldTime = 0f;
-        }
-        else
-        {
-            // 在地面：累计落地时间，清空离地计时
-            motionSS.landHoldTime += dt;
-            motionSS.airHoldTime = 0f;
-        }
-
-        // 预落地（可选：留给你后续用射线/球体预测后写入）
-        motionSS.preLand = motionSS.preLand && !motionSS.isGrounded; // 例如：着地后自动清
-
-        // 写回、清一次性标记
-        CurrentMotion = motionSS;
-        _jumpPressedFlag = false;
-        _prevGrounded = motionSS.isGrounded;
-    }
+#region =================4. Unity 生命周期（Awake/OnEnable/OnDisable/Start/Update/FixedUpdate）=====================
+// 说明：组件初始化、启停订阅、帧逻辑与物理步
 
     private void Awake()
     {
@@ -170,7 +108,12 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
         {
             animation_Contorller = GetComponentInChildren<Animation_Contorller>();
         }
-        // 如果 Animation_Contorller 里需要 Animator，一定要在它的脚本里也做空引用检查
+
+        if (animator == null)
+        {
+            animator = GetComponentInChildren<Animator>(true);
+        }
+        
 
         // 初始化 InputActions（确保你的 InputActions 里有 player.Map 与下列动作）
         _input = new InputControls();
@@ -250,7 +193,6 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
             Debug.LogWarning("[Player_Controller] shSariaConfig 未赋值。后续 PlayAnimation(\"Idle\") 可能找不到动画。");
         }
     }
-
 
     /// <summary>
     /// update中仅采集玩家输入的意图，不做物理运算
@@ -343,6 +285,83 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
         Vector3 movementDirection = _wishDirWorld * _speedRatio;
         ecmcharacter.SetMovementDirection(movementDirection);
     }
+#endregion
+
+
+#region =================5. ECM2快照与回调=====================
+// 说明：ECM2物理状态采样与回调事件处理
+
+    /// <summary>
+    /// 读取ECM2的物理状态等，记入MotionSnapshot
+    /// </summary>
+    private void BuildSnapshotFromECM2()
+    {
+        // 读取 ECM2 的真实速度
+        Vector3 v = ecmcharacter.GetVelocity();
+
+        // —— 填充快照 —— 
+        MotionSnapshot motionSS = CurrentMotion; // 在原有基础上更新，保留上一帧的帧事件等
+
+        // 速度与方向
+        motionSS.speedWorld = v;
+        motionSS.speedLocal = transform.InverseTransformDirection(v);
+        motionSS.speedY = v.y;
+
+        Vector3 vXZ = v; vXZ.y = 0f;
+        motionSS.speedXZ = vXZ.magnitude;
+
+        // 速度比例（0..1，仅看水平速度）
+        float maxSpd = Mathf.Max(0.0001f, ecmcharacter.GetMaxSpeed());
+        motionSS.speedRadio = Mathf.InverseLerp(0f, maxSpd, motionSS.speedXZ);
+
+        // 地面/下落
+        motionSS.isGrounded = ecmcharacter.IsGrounded();
+        motionSS.isFalling = ecmcharacter.IsFalling();
+
+        //坡度角（暂时搁置）
+
+        // 本地输入方向（来自 ECM2 的 MovementDirection；去Y并归一）
+        Vector3 wishWorld = ecmcharacter.GetMovementDirection();
+        Vector3 wishLocal = transform.InverseTransformDirection(wishWorld);
+        wishLocal.y = 0f;
+        if (wishLocal.sqrMagnitude > 1e-6f) wishLocal.Normalize();
+        motionSS.wishDirLocal = wishLocal;
+
+        // 推断是否处于“跑档”（相对你配置的 walkSpeedRadio 给个小裕量）
+        motionSS.runHeld = motionSS.speedRadio > (walkSpeedRadio + 0.05f);
+
+        // 本帧是否按下跳跃（来自输入事件的一次性标记）
+        motionSS.jumpBottonDown = _jumpPressedFlag;
+
+        // 帧事件：起跳/落地
+        // - 起跳：优先由输入事件标记
+        motionSS.justJumped = motionSS.justJumped || _jumpPressedFlag;
+        // - 落地：上一帧不在地面，这一帧在地面
+        motionSS.justLanded = !_prevGrounded && motionSS.isGrounded;
+
+        // === 计时：AirHold & LandHold ===
+        float dt = Time.deltaTime;  // 或 Time.fixedDeltaTime，看你在哪调用
+        if (!motionSS.isGrounded)
+        {
+            // 在空中：累计离地时间，清空落地计时
+            motionSS.airHoldTime += dt;
+            motionSS.landHoldTime = 0f;
+        }
+        else
+        {
+            // 在地面：累计落地时间，清空离地计时
+            motionSS.landHoldTime += dt;
+            motionSS.airHoldTime = 0f;
+        }
+
+        // 预落地（可选：留给你后续用射线/球体预测后写入）
+        motionSS.preLand = motionSS.preLand && !motionSS.isGrounded; // 例如：着地后自动清
+
+        // 写回、清一次性标记
+        CurrentMotion = motionSS;
+        _jumpPressedFlag = false;
+        _prevGrounded = motionSS.isGrounded;
+    }
 
     private void OnCharacterMovementUpdated(float deltaTime)
     {
@@ -353,6 +372,11 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
             ChangeState(next);
         }
     }
+#endregion
+
+
+#region =================6. 状态机与决策=====================
+// 说明：根据运动快照判断并切换角色状态
 
     /// <summary>
     /// 判断角色的ECM2物理状态并切换动画的State
@@ -383,45 +407,6 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
         return currnetPlayerState;
     }
 
-    // ----------------------------------------------------------------
-    // 输入事件：跳跃 
-    // ----------------------------------------------------------------
-
-    private void OnJumpPerformed(InputAction.CallbackContext ctx)
-    {
-        // 起跳前短暂停用贴地约束，避免“粘地”抵消垂直速度（可按项目需要开/关）
-        ecmcharacter.PauseGroundConstraint(0.12f);
-
-        ecmcharacter.useRootMotion = true;
-        Debug.Log("useRootMotin:" + ecmcharacter.useRootMotion.ToString());
-
-        // 触发 ECM2 的跳跃输入（ECM2 内部会在模拟阶段 DoJump）
-        ecmcharacter.Jump();
-
-        //记录本帧“按下跳跃”
-        _jumpPressedFlag = true;
-        ecmcharacter.useRootMotion = false;
-        Debug.Log("useRootMotin:" + ecmcharacter.useRootMotion.ToString());
-
-        DoAfter(0.5f, () => ecmcharacter.useRootMotion = false);
-    }
-
-
-    private void OnJumpCanceled(InputAction.CallbackContext ctx)
-    {
-        // 松开 → 可变跳高（更短的上升）
-        ecmcharacter.StopJumping();
-        _jumpPressedFlag = false;
-    }
-
-    // ----------------------------------------------------------------
-    // 输入事件：键盘走跑切换
-    // ----------------------------------------------------------------
-    private void OnMoveSwitch(InputAction.CallbackContext ctx)
-    {
-        _walkToggle = !_walkToggle;
-    }
-
     /// <summary>
     /// 修改状态标识
     /// </summary>
@@ -444,23 +429,53 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
                 break;
         }
     }
+#endregion
 
-    //通用延迟函数
-    private void DoAfter(float delay, Action action)
+
+#region =================7. 输入事件=====================
+// 说明：跳跃与走跑切换等输入事件回调
+
+    // 输入事件：跳跃 
+    private void OnJumpPerformed(InputAction.CallbackContext ctx)
     {
-        StartCoroutine(DoAfterCoroutine(delay, action));
+        // 起跳前短暂停用贴地约束，避免“粘地”抵消垂直速度（可按项目需要开/关）
+        ecmcharacter.PauseGroundConstraint(0.12f);
+
+        ecmcharacter.useRootMotion = true;
+        Debug.Log("useRootMotin:" + ecmcharacter.useRootMotion.ToString());
+
+        // 触发 ECM2 的跳跃输入（ECM2 内部会在模拟阶段 DoJump）
+        ecmcharacter.Jump();
+
+        //记录本帧“按下跳跃”
+        _jumpPressedFlag = true;
+        ecmcharacter.useRootMotion = false;
+        Debug.Log("useRootMotin:" + ecmcharacter.useRootMotion.ToString());
+
+        DoAfter(0.5f, () => ecmcharacter.useRootMotion = false);
     }
 
-    private IEnumerator DoAfterCoroutine(float delay, Action action)
+    private void OnJumpCanceled(InputAction.CallbackContext ctx)
     {
-        yield return new WaitForSeconds(delay);
-        action?.Invoke();
+        // 松开 → 可变跳高（更短的上升）
+        ecmcharacter.StopJumping();
+        _jumpPressedFlag = false;
     }
+
+    // 输入事件：键盘走跑切换
+    private void OnMoveSwitch(InputAction.CallbackContext ctx)
+    {
+        _walkToggle = !_walkToggle;
+    }
+#endregion
+
+
+#region =================8. 动画控制（播放/混合/相位锁）=====================
+// 说明：动画播放、混合权重与相位锁控制
 
     /// <summary>
     /// 播放动画
     /// </summary>
-    /// <param name="animationClipName"></param>
     public void PlayAnimation(string animationClipName, float speed = 1, bool refreshAnimation = false, float transitionFixedTime = 0.25f)
     {
         if (shSariaConfig == null)
@@ -517,7 +532,6 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
         animation_Contorller.SetBlendWeight(clip1Weight);
     }
 
-
     /// <summary>
     /// 播放blend动画（多个）
     /// </summary>
@@ -552,6 +566,16 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
         animation_Contorller.SetBlendWeight(weightList);
     }
 
+    //动画事件包装一层（为了给state调用）
+    public void AddAnimationEvent(string eventName, Action action){ animation_Contorller.AddAnimationEvent(eventName, action); }
+
+    public void RemoveAnimationEvent(string eventName, Action action){ animation_Contorller.RemoveAnimationEvent(eventName, action); }
+
+    public void RemoveAnimationEvent(string eventName){ animation_Contorller.RemoveAnimationEvent(eventName); }
+
+    public void ClearAllActionEvent(){ animation_Contorller.ClearAllActionEvent(); }
+
+
 
     /// <summary>启用 Walk/Run 的相位锁（可选初相位）。</summary>
     public void EnableBlendPhaseLock(float? initPhase01 = null) => animation_Contorller.EnablePhaseLockForWalkRun(initPhase01);
@@ -561,4 +585,22 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
 
     /// <summary>关闭相位锁，恢复自动播放速度（默认1,1；如需自定义可传参）。</summary>
     public void DisableBlendPhaseLock(float s0 = 1f, float s1 = 1f) => animation_Contorller.DisablePhaseLockForWalkRun(s0, s1);
+#endregion
+
+
+#region =================9. 通用工具函数=====================
+// 说明：通用延迟与协程工具
+
+    //通用延迟函数
+    private void DoAfter(float delay, Action action)
+    {
+        StartCoroutine(DoAfterCoroutine(delay, action));
+    }
+
+    private IEnumerator DoAfterCoroutine(float delay, Action action)
+    {
+        yield return new WaitForSeconds(delay);
+        action?.Invoke();
+    }
+#endregion
 }

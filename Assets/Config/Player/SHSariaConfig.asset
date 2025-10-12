@@ -16,12 +16,12 @@ MonoBehaviour:
     SerializedFormat: 2
     SerializedBytes: 
     ReferencedUnityObjects:
-    - {fileID: 3881914516496145457, guid: 6be33ef3457cdd041aa577e7570eb7fb, type: 3}
-    - {fileID: -7374226881450746781, guid: 6be33ef3457cdd041aa577e7570eb7fb, type: 3}
-    - {fileID: -7893215791471557381, guid: 6be33ef3457cdd041aa577e7570eb7fb, type: 3}
-    - {fileID: -8485112998161943348, guid: 6be33ef3457cdd041aa577e7570eb7fb, type: 3}
-    - {fileID: -335714229069539089, guid: 6be33ef3457cdd041aa577e7570eb7fb, type: 3}
-    - {fileID: -2384863013766288670, guid: 6be33ef3457cdd041aa577e7570eb7fb, type: 3}
+    - {fileID: 7400000, guid: 14ef0cfd5b446734faca8834b15aace4, type: 2}
+    - {fileID: 7400000, guid: 84eab3874cf448744803ed8aa3295a62, type: 2}
+    - {fileID: 7400000, guid: 0e0a8bc0f7c60254aa3bade18ae66d67, type: 2}
+    - {fileID: 7400000, guid: fe098f52022905646a5822dfa636efaf, type: 2}
+    - {fileID: 7400000, guid: 5e85939249c00094ab0295d387fd7853, type: 2}
+    - {fileID: 7400000, guid: cb004dbf347b55749bfdd497528fb583, type: 2}
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
@@ -122,3 +122,9 @@ MonoBehaviour:
   walkHold: 0.5
   walkSpeedRadio: 0.3
   rotateSpeed: 10
+  FootStepAudioClips:
+  - {fileID: 8300000, guid: 229c64ed39310624c9aada3d771c7b06, type: 3}
+  - {fileID: 8300000, guid: 1f866668884214b4db7140d25b0def17, type: 3}
+  - {fileID: 8300000, guid: e5ae416f49602c1409e7c0d85ae0215c, type: 3}
+  - {fileID: 8300000, guid: 169f75c2c9f5fae4c9147639256eb0c8, type: 3}
+  - {fileID: 8300000, guid: 375af61fe5c06774084832c408e31683, type: 3}

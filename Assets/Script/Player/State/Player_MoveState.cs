@@ -13,6 +13,8 @@ public class Player_MoveState : PlayerStateBase
     private float walkHold => shSariaConfig != null ? shSariaConfig.walkHold : 0.5f;
     private float rotateSpeed => shSariaConfig != null ? shSariaConfig.rotateSpeed : 10f;
 
+    private bool leftNext = true;//用于脚步声换脚播放
+
     // 两路混合时：第一个动画（Walk）的当前权重（0..1）
     private float walkWeight = 0f;
 
@@ -29,7 +31,10 @@ public class Player_MoveState : PlayerStateBase
 
     public override void Enter()
     {
+        shSariaConfig = player.ShSariaConfig;
 
+        player.AddAnimationEvent("FootStep", OnFootStep);
+        
         var motionSS = player.CurrentMotion;
         if (motionSS.justLanded && motionSS.landHoldTime <= 0.15f)
         {
@@ -44,7 +49,6 @@ public class Player_MoveState : PlayerStateBase
             player.EnableBlendPhaseLock();
             hasStartedWalkRunAnim = true;
         }
-
 
         Debug.Log("进入MoveState");
     }
@@ -89,5 +93,32 @@ public class Player_MoveState : PlayerStateBase
     public override void Exit()
     {
         player.DisableBlendPhaseLock();
+        player.RemoveAnimationEvent("FootStep", OnFootStep);
+    }
+
+    private void OnFootStep()
+    {
+        if (shSariaConfig == null || shSariaConfig.FootStepAudioClips == null || shSariaConfig.FootStepAudioClips.Length == 0)
+        {
+            Debug.LogWarning("[Footstep] 配置未赋值或数组为空");
+            return;
+        }
+            
+
+        // 随机取一个脚步声
+        int index = UnityEngine.Random.Range(0, shSariaConfig.FootStepAudioClips.Length);
+        AudioClip clip = shSariaConfig.FootStepAudioClips[index];
+
+        // 获取当前脚的世界坐标
+        Transform foot = leftNext
+            ? player.Animator.GetBoneTransform(HumanBodyBones.LeftFoot)
+            : player.Animator.GetBoneTransform(HumanBodyBones.RightFoot);
+        Vector3 pos = foot.position;
+
+        // 播放脚步声
+        AudioSystem.PlayOneShot(clip, pos, false, 0.2f);
+
+        // 下次换另一只脚
+        leftNext = !leftNext;
     }
 }
