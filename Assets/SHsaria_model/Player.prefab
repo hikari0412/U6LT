@@ -130,10 +130,10 @@ MonoBehaviour:
   _perchAdditionalHeight: 0.4
   _slopeLimitOverride: 0
   _useFlatTop: 0
-  _useFlatBaseForGroundChecks: 1
+  _useFlatBaseForGroundChecks: 0
   _collisionLayers:
     serializedVersion: 2
-    m_Bits: 128
+    m_Bits: 192
   _triggerInteraction: 1
   _advanced:
     minMoveDistance: 0
@@ -436,10 +436,6 @@ PrefabInstance:
     - target: {fileID: 2959351101860262463, guid: 931383139236bf443aa00740431e803d, type: 3}
       propertyPath: serializeData2.selectionData.positions.Array.data[9].x
       value: 0.29639393
-      objectReference: {fileID: 0}
-    - target: {fileID: 5208728284351822561, guid: 931383139236bf443aa00740431e803d, type: 3}
-      propertyPath: serializeData2.selectionData.maxConnectionDistance
-      value: 0.5059394
       objectReference: {fileID: 0}
     - target: {fileID: 5208728284351822561, guid: 931383139236bf443aa00740431e803d, type: 3}
       propertyPath: serializeData2.selectionData.positions.Array.data[0].x

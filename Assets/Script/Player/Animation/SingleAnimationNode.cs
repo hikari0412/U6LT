@@ -24,6 +24,8 @@ public class SingleAnimationNode : AnimationNodeBase
     public void Init(PlayableGraph graph, AnimationMixerPlayable outputMixer, AnimationClip animationClip, float speed, int inputPort)
     {
         clipPlayable = AnimationClipPlayable.Create(graph, animationClip);
+        clipPlayable.SetApplyFootIK(false);
+        clipPlayable.SetApplyPlayableIK(true);
         clipPlayable.SetSpeed(speed);
         // 记录节点连接的端口号，控制器会在回收/销毁时用到
         InputPort = inputPort;

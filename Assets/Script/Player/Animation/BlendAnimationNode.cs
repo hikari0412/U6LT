@@ -72,6 +72,8 @@ public class BlendAnimationNode : AnimationNodeBase
     private AnimationClipPlayable CreateAndConnectBlendPlayable(PlayableGraph graph, AnimationClip clip, int index, float speed)
     {
         AnimationClipPlayable clipPlayable = AnimationClipPlayable.Create(graph, clip);
+        clipPlayable.SetApplyFootIK(false);
+        clipPlayable.SetApplyPlayableIK(true);
         clipPlayable.SetSpeed(speed);
         blendClipPlayableList.Add(clipPlayable);
         graph.Connect(clipPlayable, 0, blendMixer, index);

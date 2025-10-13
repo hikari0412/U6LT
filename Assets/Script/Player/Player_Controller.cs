@@ -10,11 +10,11 @@ using System;
 public class Player_Controller : SingletonMono<Player_Controller>, IStateMachineOwner
 {
 
-#region =================1. 角色与基础配置=====================
-// 说明：包含角色控制核心组件、速度参数、状态机引用等
+    #region =================1. 角色与基础配置=====================
+    // 说明：包含角色控制核心组件、速度参数、状态机引用等
 
     [SerializeField] Animation_Contorller animation_Contorller;
-    private Animator animator;  
+    private Animator animator;
     public Animator Animator => animator; // 只读属性
     [SerializeField] private SHSariaConfig shSariaConfig;
     public SHSariaConfig ShSariaConfig => shSariaConfig;// 方便外部访问配置
@@ -45,11 +45,11 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
     public Transform ModelTransform => modelTransform;
     private StateMachine stateMachine;// JKFrame 的状态机实例
     private PlayerState currnetPlayerState; // 玩家的当前状态标识
-#endregion
+    #endregion
 
 
-#region =================2. 摄像机设置=====================
-// 说明：包含自由视角相机引用与FOV缩放相关参数
+    #region =================2. 摄像机设置=====================
+    // 说明：包含自由视角相机引用与FOV缩放相关参数
 
     // 摄像机控制参数
     [Header("Camera Settings")]
@@ -67,11 +67,11 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
 
     [Tooltip("最大FOV（值越大视角越远）")]
     [SerializeField] private float maxFOV = 40f;
-#endregion
+    #endregion
 
 
-#region =================3. 角色与输入动作=====================
-// 说明：包含ECM2角色、Input System输入动作及相关开关
+    #region =================3. 角色与输入动作=====================
+    // 说明：包含ECM2角色、Input System输入动作及相关开关
     protected Character ecmcharacter;    // ECM2 角色
 
     // 新输入系统的包装类（由 Input System 生成）
@@ -86,11 +86,11 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
     private InputAction _zoomInAction;
     private InputAction _zoomOutAction;
     private bool _walkToggle = false;
-#endregion
+    #endregion
 
 
-#region =================4. Unity 生命周期（Awake/OnEnable/OnDisable/Start/Update/FixedUpdate）=====================
-// 说明：组件初始化、启停订阅、帧逻辑与物理步
+    #region =================4. Unity 生命周期（Awake/OnEnable/OnDisable/Start/Update/FixedUpdate）=====================
+    // 说明：组件初始化、启停订阅、帧逻辑与物理步
 
     private void Awake()
     {
@@ -113,7 +113,7 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
         {
             animator = GetComponentInChildren<Animator>(true);
         }
-        
+
 
         // 初始化 InputActions（确保你的 InputActions 里有 player.Map 与下列动作）
         _input = new InputControls();
@@ -285,11 +285,11 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
         Vector3 movementDirection = _wishDirWorld * _speedRatio;
         ecmcharacter.SetMovementDirection(movementDirection);
     }
-#endregion
+    #endregion
 
 
-#region =================5. ECM2快照与回调=====================
-// 说明：ECM2物理状态采样与回调事件处理
+    #region =================5. ECM2快照与回调=====================
+    // 说明：ECM2物理状态采样与回调事件处理
 
     /// <summary>
     /// 读取ECM2的物理状态等，记入MotionSnapshot
@@ -372,11 +372,11 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
             ChangeState(next);
         }
     }
-#endregion
+    #endregion
 
 
-#region =================6. 状态机与决策=====================
-// 说明：根据运动快照判断并切换角色状态
+    #region =================6. 状态机与决策=====================
+    // 说明：根据运动快照判断并切换角色状态
 
     /// <summary>
     /// 判断角色的ECM2物理状态并切换动画的State
@@ -429,11 +429,11 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
                 break;
         }
     }
-#endregion
+    #endregion
 
 
-#region =================7. 输入事件=====================
-// 说明：跳跃与走跑切换等输入事件回调
+    #region =================7. 输入事件=====================
+    // 说明：跳跃与走跑切换等输入事件回调
 
     // 输入事件：跳跃 
     private void OnJumpPerformed(InputAction.CallbackContext ctx)
@@ -467,11 +467,11 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
     {
         _walkToggle = !_walkToggle;
     }
-#endregion
+    #endregion
 
 
-#region =================8. 动画控制（播放/混合/相位锁）=====================
-// 说明：动画播放、混合权重与相位锁控制
+    #region =================8. 动画控制（播放/混合/相位锁）=====================
+    // 说明：动画播放、混合权重与相位锁控制
 
     /// <summary>
     /// 播放动画
@@ -567,13 +567,13 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
     }
 
     //动画事件包装一层（为了给state调用）
-    public void AddAnimationEvent(string eventName, Action action){ animation_Contorller.AddAnimationEvent(eventName, action); }
+    public void AddAnimationEvent(string eventName, Action action) { animation_Contorller.AddAnimationEvent(eventName, action); }
 
-    public void RemoveAnimationEvent(string eventName, Action action){ animation_Contorller.RemoveAnimationEvent(eventName, action); }
+    public void RemoveAnimationEvent(string eventName, Action action) { animation_Contorller.RemoveAnimationEvent(eventName, action); }
 
-    public void RemoveAnimationEvent(string eventName){ animation_Contorller.RemoveAnimationEvent(eventName); }
+    public void RemoveAnimationEvent(string eventName) { animation_Contorller.RemoveAnimationEvent(eventName); }
 
-    public void ClearAllActionEvent(){ animation_Contorller.ClearAllActionEvent(); }
+    public void ClearAllActionEvent() { animation_Contorller.ClearAllActionEvent(); }
 
 
 
@@ -585,11 +585,11 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
 
     /// <summary>关闭相位锁，恢复自动播放速度（默认1,1；如需自定义可传参）。</summary>
     public void DisableBlendPhaseLock(float s0 = 1f, float s1 = 1f) => animation_Contorller.DisablePhaseLockForWalkRun(s0, s1);
-#endregion
+    #endregion
 
 
-#region =================9. 通用工具函数=====================
-// 说明：通用延迟与协程工具
+    #region =================9. 通用工具函数=====================
+    // 说明：通用延迟与协程工具
 
     //通用延迟函数
     private void DoAfter(float delay, Action action)
@@ -602,5 +602,5 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
         yield return new WaitForSeconds(delay);
         action?.Invoke();
     }
-#endregion
+    #endregion
 }

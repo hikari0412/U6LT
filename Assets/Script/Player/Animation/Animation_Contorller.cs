@@ -101,6 +101,8 @@ public class Animation_Contorller : MonoBehaviour
             mixer.SetInputWeight(2, 0f);
         }
 
+        //RebuildRig();
+
         if (!graph.IsPlaying())
         {
             graph.Play();
