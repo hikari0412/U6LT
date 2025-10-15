@@ -599,7 +599,14 @@ ModelImporter:
           preInfinity: 2
           postInfinity: 2
           rotationOrder: 4
-      events: []
+      events:
+      - time: 0
+        functionName: AnimationEvent
+        data: FootStep
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
       transformMask: []
       maskType: 3
       maskSource: {instanceID: 0}
@@ -705,12 +712,12 @@ ModelImporter:
       hasAdditiveReferencePose: 0
       loopTime: 0
       loopBlend: 0
-      loopBlendOrientation: 0
+      loopBlendOrientation: 1
       loopBlendPositionY: 0
       loopBlendPositionXZ: 0
-      keepOriginalOrientation: 0
+      keepOriginalOrientation: 1
       keepOriginalPositionY: 1
-      keepOriginalPositionXZ: 0
+      keepOriginalPositionXZ: 1
       heightFromFeet: 0
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
@@ -734,12 +741,12 @@ ModelImporter:
       hasAdditiveReferencePose: 0
       loopTime: 0
       loopBlend: 0
-      loopBlendOrientation: 0
+      loopBlendOrientation: 1
       loopBlendPositionY: 0
       loopBlendPositionXZ: 0
-      keepOriginalOrientation: 0
+      keepOriginalOrientation: 1
       keepOriginalPositionY: 1
-      keepOriginalPositionXZ: 0
+      keepOriginalPositionXZ: 1
       heightFromFeet: 0
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
@@ -932,22 +939,40 @@ ModelImporter:
             inWeight: 0
             outWeight: 0
           - serializedVersion: 3
-            time: 0.15
-            value: 0
-            inSlope: Infinity
-            outSlope: 0
-            tangentMode: 7
-            weightedMode: 0
-            inWeight: 0.33333334
-            outWeight: 0.33333334
-          - serializedVersion: 3
-            time: 0.9
+            time: 0.13
             value: 1
             inSlope: Infinity
-            outSlope: 0
+            outSlope: -0.01766494
             tangentMode: 7
             weightedMode: 0
             inWeight: 0.33333334
+            outWeight: 0.7472115
+          - serializedVersion: 3
+            time: 0.17
+            value: 0
+            inSlope: -0.06911567
+            outSlope: Infinity
+            tangentMode: 97
+            weightedMode: 0
+            inWeight: 0.62246835
+            outWeight: 0.33333334
+          - serializedVersion: 3
+            time: 0.88
+            value: 0
+            inSlope: Infinity
+            outSlope: 0.030759225
+            tangentMode: 7
+            weightedMode: 0
+            inWeight: 0.33333334
+            outWeight: 1
+          - serializedVersion: 3
+            time: 0.92
+            value: 1
+            inSlope: 0.0018941691
+            outSlope: 0
+            tangentMode: 1
+            weightedMode: 0
+            inWeight: 1
             outWeight: 0.33333334
           - serializedVersion: 3
             time: 1
@@ -975,23 +1000,41 @@ ModelImporter:
             inWeight: 0
             outWeight: 0
           - serializedVersion: 3
-            time: 0.4
-            value: 1
-            inSlope: Infinity
-            outSlope: 0
-            tangentMode: 7
-            weightedMode: 0
-            inWeight: 0.33333334
-            outWeight: 0.33333334
-          - serializedVersion: 3
-            time: 0.7
+            time: 0.38
             value: 0
             inSlope: Infinity
-            outSlope: Infinity
-            tangentMode: 7
+            outSlope: -0.0065886294
+            tangentMode: 1
             weightedMode: 0
             inWeight: 0.33333334
+            outWeight: 1
+          - serializedVersion: 3
+            time: 0.42
+            value: 1
+            inSlope: -0.025991727
+            outSlope: 0
+            tangentMode: 1
+            weightedMode: 0
+            inWeight: 1
             outWeight: 0.33333334
+          - serializedVersion: 3
+            time: 0.68
+            value: 1
+            inSlope: Infinity
+            outSlope: -0.015667204
+            tangentMode: 1
+            weightedMode: 0
+            inWeight: 0.33333334
+            outWeight: 1
+          - serializedVersion: 3
+            time: 0.72
+            value: 0
+            inSlope: 0.009994641
+            outSlope: Infinity
+            tangentMode: 1
+            weightedMode: 0
+            inWeight: 1
+            outWeight: 0
           - serializedVersion: 3
             time: 1
             value: 0
@@ -1004,7 +1047,21 @@ ModelImporter:
           preInfinity: 3
           postInfinity: 3
           rotationOrder: 4
-      events: []
+      events:
+      - time: 0.42194092
+        functionName: AnimationEvent
+        data: FootStep
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.93248945
+        functionName: AnimationEvent
+        data: FootStep
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
       transformMask: []
       maskType: 3
       maskSource: {instanceID: 0}
@@ -2083,22 +2140,40 @@ ModelImporter:
             inWeight: 0
             outWeight: 0
           - serializedVersion: 3
-            time: 0.1
-            value: 0
+            time: 0.02
+            value: 1
             inSlope: Infinity
-            outSlope: Infinity
+            outSlope: -3.5829945
             tangentMode: 7
             weightedMode: 0
             inWeight: 0.33333334
-            outWeight: 0.33333334
+            outWeight: 0.83783793
           - serializedVersion: 3
-            time: 0.6
-            value: 1
-            inSlope: Infinity
+            time: 0.14
+            value: 0
+            inSlope: -0.0000043583104
             outSlope: Infinity
             tangentMode: 1
             weightedMode: 0
+            inWeight: 1
+            outWeight: 0
+          - serializedVersion: 3
+            time: 0.56
+            value: 0
+            inSlope: -0
+            outSlope: 0.053812582
+            tangentMode: 5
+            weightedMode: 0
             inWeight: 0.33333334
+            outWeight: 1
+          - serializedVersion: 3
+            time: 0.66
+            value: 1
+            inSlope: 0.013800505
+            outSlope: Infinity
+            tangentMode: 1
+            weightedMode: 0
+            inWeight: 1
             outWeight: 0.33333334
           - serializedVersion: 3
             time: 1
@@ -2126,22 +2201,40 @@ ModelImporter:
             inWeight: 0
             outWeight: 0
           - serializedVersion: 3
-            time: 0.1
-            value: 1
+            time: 0.06
+            value: 0
             inSlope: Infinity
-            outSlope: Infinity
-            tangentMode: 103
+            outSlope: 0.024679927
+            tangentMode: 1
             weightedMode: 0
             inWeight: 0.33333334
-            outWeight: 0.33333334
+            outWeight: 1
           - serializedVersion: 3
-            time: 0.66
-            value: 0
-            inSlope: -4.1874733
+            time: 0.16
+            value: 1
+            inSlope: -0.091865525
             outSlope: Infinity
             tangentMode: 97
             weightedMode: 0
+            inWeight: 1
+            outWeight: 0.33333334
+          - serializedVersion: 3
+            time: 0.58
+            value: 1
+            inSlope: Infinity
+            outSlope: -0.01507076
+            tangentMode: 7
+            weightedMode: 0
             inWeight: 0.33333334
+            outWeight: 1
+          - serializedVersion: 3
+            time: 0.7
+            value: 0
+            inSlope: -0.023844771
+            outSlope: Infinity
+            tangentMode: 97
+            weightedMode: 0
+            inWeight: 1
             outWeight: 0.33333334
           - serializedVersion: 3
             time: 1
@@ -2155,7 +2248,21 @@ ModelImporter:
           preInfinity: 3
           postInfinity: 3
           rotationOrder: 4
-      events: []
+      events:
+      - time: 0.10773558
+        functionName: AnimationEvent
+        data: FootStep
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.56751055
+        functionName: AnimationEvent
+        data: FootStep
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
       transformMask: []
       maskType: 3
       maskSource: {instanceID: 0}

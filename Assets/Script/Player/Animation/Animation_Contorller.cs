@@ -63,7 +63,7 @@ public class Animation_Contorller : MonoBehaviour
     void Awake()
     {
         // 首帧强制在 Idle，避免“第一帧姿势不定/抖动”
-        animator.Play(Idle, 0, 0f);
+        animator.Play("Idle", 0, 0f);
         //animator.Update(0f);
         currentHash = Idle;
     }

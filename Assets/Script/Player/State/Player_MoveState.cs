@@ -20,6 +20,8 @@ public class Player_MoveState : PlayerStateBase
     public override void Init(IStateMachineOwner owner)
     {
         base.Init(owner);
+        //注意！用到配置文件的要在这里由player注入
+        shSariaConfig = player.ShSariaConfig;
     }
 
     public override void Enter()
@@ -27,7 +29,6 @@ public class Player_MoveState : PlayerStateBase
         player.AddAnimationEvent("FootStep", OnFootStep);
 
         var motionSS = player.CurrentMotion;
-        //player.setAnimatiorFloat("Speed", motionSS.speedRadio);
         if (motionSS.justLanded && motionSS.landHoldTime <= 0.15f)
         {
             player.PlayAnimation("JumpLand", 0.15f);
@@ -38,15 +39,12 @@ public class Player_MoveState : PlayerStateBase
             player.PlayAnimation("Move", 0.15f);
             hasStartedMoveAnim = true;
         }
-
         Debug.Log("进入MoveState");
     }
 
     public override void Update()
     {
         var motionSS = player.CurrentMotion;
-        // 速度比例（0..1）
-        //player.setAnimatiorFloat("Speed", motionSS.speedRadio);
         if (!hasStartedMoveAnim && motionSS.landHoldTime > 0.15f)
         {
             player.PlayAnimation("Move", 0.15f);
@@ -76,7 +74,6 @@ public class Player_MoveState : PlayerStateBase
             return;
         }
 
-
         // 随机取一个脚步声
         int index = UnityEngine.Random.Range(0, shSariaConfig.FootStepAudioClips.Length);
         AudioClip clip = shSariaConfig.FootStepAudioClips[index];
@@ -88,7 +85,7 @@ public class Player_MoveState : PlayerStateBase
         Vector3 pos = foot.position;
 
         // 播放脚步声
-        AudioSystem.PlayOneShot(clip, pos, false, 0.2f);
+        AudioSystem.PlayOneShot(clip, pos, false, 0.5f);
 
         // 下次换另一只脚
         leftNext = !leftNext;
