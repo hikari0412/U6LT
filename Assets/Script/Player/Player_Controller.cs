@@ -16,6 +16,8 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
     [SerializeField] Animation_Contorller animation_Contorller;
     private Animator animator;
     public Animator Animator => animator; // 只读属性
+
+
     [SerializeField] private SHSariaConfig shSariaConfig;
     public SHSariaConfig ShSariaConfig => shSariaConfig;// 方便外部访问配置
     private float walkSpeedRadio => shSariaConfig != null ? shSariaConfig.walkSpeedRadio : 0.5f; //walkSpeed只读，外部无法随意修改，如果没填就取1
@@ -284,6 +286,8 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
         //把移动传给ECM2
         Vector3 movementDirection = _wishDirWorld * _speedRatio;
         ecmcharacter.SetMovementDirection(movementDirection);
+
+        setAnimatiorFloat("Speed", Mathf.InverseLerp(0.0f, ecmcharacter.GetMaxSpeed(), ecmcharacter.GetSpeed()));
     }
     #endregion
 
@@ -441,18 +445,18 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
         // 起跳前短暂停用贴地约束，避免“粘地”抵消垂直速度（可按项目需要开/关）
         ecmcharacter.PauseGroundConstraint(0.12f);
 
-        ecmcharacter.useRootMotion = true;
-        Debug.Log("useRootMotin:" + ecmcharacter.useRootMotion.ToString());
+        //ecmcharacter.useRootMotion = true;
+        //Debug.Log("useRootMotin:" + ecmcharacter.useRootMotion.ToString());
 
         // 触发 ECM2 的跳跃输入（ECM2 内部会在模拟阶段 DoJump）
         ecmcharacter.Jump();
 
         //记录本帧“按下跳跃”
         _jumpPressedFlag = true;
-        ecmcharacter.useRootMotion = false;
-        Debug.Log("useRootMotin:" + ecmcharacter.useRootMotion.ToString());
+        //ecmcharacter.useRootMotion = false;
+        //Debug.Log("useRootMotin:" + ecmcharacter.useRootMotion.ToString());
 
-        DoAfter(0.5f, () => ecmcharacter.useRootMotion = false);
+        //DoAfter(0.5f, () => ecmcharacter.useRootMotion = false);
     }
 
     private void OnJumpCanceled(InputAction.CallbackContext ctx)
@@ -470,101 +474,27 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
     #endregion
 
 
-    #region =================8. 动画控制（播放/混合/相位锁）=====================
+    #region =================8. 动画控制（播放/设置animator参数）=====================
     // 说明：动画播放、混合权重与相位锁控制
 
     /// <summary>
     /// 播放动画
     /// </summary>
-    public void PlayAnimation(string animationClipName, float speed = 1, bool refreshAnimation = false, float transitionFixedTime = 0.25f)
+    public void PlayAnimation(string animationName, float transtionFixedTime = 0.25f, int layer = 0, float fixedTimeOffset = 0.0f)
     {
-        if (shSariaConfig == null)
-        {
-            Debug.LogWarning("[Player_Controller] shSariaConfig 为 null，无法根据名字获取动画。");
-            return;
-        }
-
-        var clip = shSariaConfig.GetAnimationByName(animationClipName);
-        if (clip == null)
-        {
-            Debug.LogWarning($"[Player_Controller] 配置中找不到名为 \"{animationClipName}\" 的 AnimationClip。");
-            return;
-        }
-
-        animation_Contorller.PlaySingleAnimation(clip, speed, refreshAnimation, transitionFixedTime);
+        animation_Contorller.PlayAnimation(animationName, transtionFixedTime, 0, float.NegativeInfinity);
     }
 
-    /// <summary>
-    /// 播放blend动画
-    /// </summary>
-    public void PlayBlendAnimation(string clip1Name, string clip2Name, float speed = 1f, float transitionFixedTime = 0.25f)
+    public void setAnimatiorFloat(string name, float value)
     {
-        if (shSariaConfig == null)
-        {
-            Debug.LogWarning("[Player_Controller] shSariaConfig 为 null，无法根据名字获取动画。");
-            return;
-        }
-
-        AnimationClip clip1 = shSariaConfig.GetAnimationByName(clip1Name);
-        AnimationClip clip2 = shSariaConfig.GetAnimationByName(clip2Name);
-
-        if (clip1 == null)
-        {
-            Debug.LogWarning($"[Player_Controller] 配置中找不到名为 \"{clip1Name}\" 的 AnimationClip。");
-            return;
-        }
-
-        if (clip2 == null)
-        {
-            Debug.LogWarning($"[Player_Controller] 配置中找不到名为 \"{clip2Name}\" 的 AnimationClip。");
-            return;
-        }
-
-        animation_Contorller.PlayBlendAnimation(clip1, clip2, speed, transitionFixedTime);
+        animation_Contorller.setAnimatiorFloat(name, value);
     }
 
-    /// <summary>
-    /// 设置blend动画的权重
-    /// </summary>
-    /// <param name="clip1Weight"></param>
-    public void SetBlendWeight(float clip1Weight)
+    public void setAnimatiorBool(string name, bool value)
     {
-        animation_Contorller.SetBlendWeight(clip1Weight);
+        animation_Contorller.setAnimatiorBool(name, value);
     }
 
-    /// <summary>
-    /// 播放blend动画（多个）
-    /// </summary>
-    public void PlayBlendAnimation(List<AnimationClip> clips, float speed = 1, float transitionFixedTime = 0.25f)
-    {
-        if (clips == null || clips.Count == 0)
-        {
-            Debug.LogWarning("[Player_Controller] clips 为空，无法播放动画。");
-            return;
-        }
-
-        // 过滤掉空元素
-        List<AnimationClip> validClips = clips.FindAll(c => c != null);
-
-        if (validClips.Count == 0)
-        {
-            Debug.LogWarning("[Player_Controller] 所有 AnimationClip 都为空。");
-            return;
-        }
-
-        // 传入 controller，内部自己创建 mixer 输入数量 = validClips.Count
-        animation_Contorller.PlayBlendAnimation(validClips, speed, transitionFixedTime);
-
-    }
-
-    /// <summary>
-    /// 设置blend动画的权重（多个）
-    /// </summary>
-    /// <param name="clip1Weight"></param>
-    public void SetBlendWeight(List<float> weightList)
-    {
-        animation_Contorller.SetBlendWeight(weightList);
-    }
 
     //动画事件包装一层（为了给state调用）
     public void AddAnimationEvent(string eventName, Action action) { animation_Contorller.AddAnimationEvent(eventName, action); }
@@ -575,16 +505,6 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
 
     public void ClearAllActionEvent() { animation_Contorller.ClearAllActionEvent(); }
 
-
-
-    /// <summary>启用 Walk/Run 的相位锁（可选初相位）。</summary>
-    public void EnableBlendPhaseLock(float? initPhase01 = null) => animation_Contorller.EnablePhaseLockForWalkRun(initPhase01);
-
-    /// <summary>按当前 Walk 权重推进相位（每帧调用）。</summary>
-    public void UpdateBlendPhaseLock(float walkWeight) => animation_Contorller.UpdatePhaseLockForWalkRun(walkWeight);
-
-    /// <summary>关闭相位锁，恢复自动播放速度（默认1,1；如需自定义可传参）。</summary>
-    public void DisableBlendPhaseLock(float s0 = 1f, float s1 = 1f) => animation_Contorller.DisablePhaseLockForWalkRun(s0, s1);
     #endregion
 
 

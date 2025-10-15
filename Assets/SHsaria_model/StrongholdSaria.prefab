@@ -3133,7 +3133,7 @@ MonoBehaviour:
       distanceCullingFadeRatio: 0.2
       distanceCullingReferenceObject: {fileID: 0}
     normalAxis: 1
-    gravity: 5
+    gravity: 8
     gravityDirection:
       x: 0
       y: -1
@@ -12536,10 +12536,10 @@ PrefabInstance:
       addedObject: {fileID: 2669503649226997650}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 97033277aeaa0de4f9d90512dc448e6e, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 5389154346580249867}
+      addedObject: {fileID: 3386908745950242858}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 97033277aeaa0de4f9d90512dc448e6e, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1132239998507948103}
+      addedObject: {fileID: 3579091593165102102}
     - targetCorrespondingSourceObject: {fileID: 1763322527237525951, guid: 97033277aeaa0de4f9d90512dc448e6e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5718720692844226040}
@@ -12702,7 +12702,7 @@ Animator:
   m_GameObject: {fileID: 811863654213165209}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: 97033277aeaa0de4f9d90512dc448e6e, type: 3}
-  m_Controller: {fileID: 9100000, guid: 6bab0046fb38bc54c9721faef9fc1e35, type: 2}
+  m_Controller: {fileID: 9100000, guid: 845127e58b99d54418290a7e437eb7e9, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -12714,7 +12714,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &5389154346580249867
+--- !u!114 &3386908745950242858
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -12723,11 +12723,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 811863654213165209}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b3ab7c614d05e754a8a726f137075366, type: 3}
+  m_Script: {fileID: 11500000, guid: 0c7bc043ac0cf5140b78350944059699, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 2669503649226997650}
---- !u!114 &1132239998507948103
+--- !u!114 &3579091593165102102
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -12736,17 +12736,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 811863654213165209}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6d5464f836d3e76409643e7f0ca0671c, type: 3}
+  m_Script: {fileID: 11500000, guid: 87c35371a7b5cb548a8e0ef820970c07, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  iKLayer:
+  useIK: 1
+  useIKRot: 1
+  fieldLayer:
     serializedVersion: 2
     m_Bits: 128
-  rayHitOffset: 0.06
-  rayCastDistance: 0
-  enableIK: 1
-  iKSphereRadius: 0.05
-  posSphereRadius: 0.05
+  offset: {x: 0, y: 0.06, z: 0}
+  rayRange: 1
+  rayPositionOffset: {x: 0, y: 0.3, z: 0}
+  isChangeBodyPosition: 1
+  bodyPositionSpeed: 50
+  bodyBlendEnableTime: 0.08
+  bodyBlendDisableTime: 0.12
+  bodyOffsetSmoothTime: 0.06
+  bodyOffsetMaxSpeed: 1
+  bodyOffsetDownClamp: 0.2
+  bodyOffsetUpClamp: 0
 --- !u!4 &838947631695778274 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 874175575265233962, guid: 97033277aeaa0de4f9d90512dc448e6e, type: 3}

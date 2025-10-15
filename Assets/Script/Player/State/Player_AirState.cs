@@ -6,7 +6,6 @@ using ECM2;
 
 public class Player_AirState : PlayerStateBase
 {
-    
     //动画播放标记
     private bool hasStartedJumpLoopAnim = false;
 
@@ -20,14 +19,14 @@ public class Player_AirState : PlayerStateBase
     {
         var motionSS = player.CurrentMotion;
 
-        if (motionSS.justJumped && motionSS.jumpBottonDown && motionSS.airHoldTime <= 0.5f)
+        if (motionSS.justJumped && motionSS.jumpBottonDown && motionSS.airHoldTime <= 0.25f)
         {
-            player.PlayAnimation("JumpStart", 1f, false, 0.15f);
+            player.PlayAnimation("JumpStart",0.15f);
             hasStartedJumpLoopAnim = false;
         }
         else
         {
-            player.PlayAnimation("JumpLoop", 1f, false, 0.5f);
+            player.PlayAnimation("JumpLoop",0.25f);
             hasStartedJumpLoopAnim = true;
         }
 
@@ -38,9 +37,9 @@ public class Player_AirState : PlayerStateBase
     public override void Update()
     {
         var motionSS = player.CurrentMotion;
-        if (!hasStartedJumpLoopAnim && motionSS.airHoldTime > 0.5f)
+        if (!hasStartedJumpLoopAnim && motionSS.airHoldTime > 0.25f)
         {
-            player.PlayAnimation("JumpLoop", 1f, false, 0.5f);
+            player.PlayAnimation("JumpLoop", 0.25f);
             hasStartedJumpLoopAnim = true;
         }
     }

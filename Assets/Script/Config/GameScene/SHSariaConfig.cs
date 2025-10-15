@@ -23,11 +23,4 @@ public class SHSariaConfig : ConfigBase
 
     [LabelText("脚步声资源")]public AudioClip[] FootStepAudioClips;
 
-    [LabelText("标准动作表")]public Dictionary<string, AnimationClip> StandAnimationDic;
-
-    public AnimationClip GetAnimationByName(string animationName)
-    {
-        return StandAnimationDic[animationName];
-    }
-
 }
