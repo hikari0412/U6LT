@@ -197,7 +197,7 @@ Material:
     - _OutlineColor: {r: 0.20754716, g: 0.11014161, b: 0.09496262, a: 0.84313726}
     - _OutlineDirectLightingColor: {r: 0.09433961, g: 0.09433961, b: 0.09433961, a: 0.5}
     - _OutlinePunctualLightingColor: {r: 0.122641504, g: 0.122641504, b: 0.122641504, a: 0.5}
-    - _SelfEnvColor: {r: 0.5, g: 0.5, b: 0.5, a: 0.5}
+    - _SelfEnvColor: {r: 1, g: 1, b: 1, a: 0.5}
     - _SelfLight: {r: 1, g: 1, b: 1, a: 1}
     - _ShadowColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}

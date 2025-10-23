@@ -12540,6 +12540,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 97033277aeaa0de4f9d90512dc448e6e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3579091593165102102}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 97033277aeaa0de4f9d90512dc448e6e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3757303389605488683}
     - targetCorrespondingSourceObject: {fileID: 1763322527237525951, guid: 97033277aeaa0de4f9d90512dc448e6e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5718720692844226040}
@@ -12728,6 +12731,34 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   animator: {fileID: 2669503649226997650}
 --- !u!114 &3579091593165102102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 811863654213165209}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87c35371a7b5cb548a8e0ef820970c07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  useIK: 1
+  useIKRot: 1
+  fieldLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  offset: {x: 0, y: 0.06, z: 0}
+  rayRange: 1
+  rayPositionOffset: {x: 0, y: 0.3, z: 0}
+  isChangeBodyPosition: 1
+  bodyPositionSpeed: 50
+  bodyBlendEnableTime: 0.08
+  bodyBlendDisableTime: 0.12
+  bodyOffsetSmoothTime: 0.06
+  bodyOffsetMaxSpeed: 1
+  bodyOffsetDownClamp: 0.2
+  bodyOffsetUpClamp: 0
+--- !u!114 &3757303389605488683
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

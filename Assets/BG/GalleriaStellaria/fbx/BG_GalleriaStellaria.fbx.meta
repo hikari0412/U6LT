@@ -7,6 +7,31 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: Mat_BG_down_1
+    second: {fileID: 2100000, guid: d1626b6406f01454c9b29b08327c5521, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Mat_BG_down_2
+    second: {fileID: 2100000, guid: 6b6e67a779718d849bc52bf27d93f32a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Mat_BG_down_3
+    second: {fileID: 2100000, guid: 402e584803a34e845af7fc5a52ca0048, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Mat_BG_side
+    second: {fileID: 2100000, guid: add25ccf4b897d34999d89ffe6e27c17, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Mat_BG_up_down_4
+    second: {fileID: 2100000, guid: 5f532cd2daeb45844953132079d507e6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: lambert1
     second: {fileID: 2100000, guid: d1626b6406f01454c9b29b08327c5521, type: 2}
   materials:
