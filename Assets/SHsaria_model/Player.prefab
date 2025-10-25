@@ -106,7 +106,7 @@ MonoBehaviour:
   zoomSensitivity: 1
   gamepadZoomSpeed: 40
   minFOV: 8
-  maxFOV: 40
+  maxFOV: 50
 --- !u!114 &7164731542498921824
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -161,7 +161,7 @@ MonoBehaviour:
   _rotationMode: 1
   _rotationRate: 540
   _startingMovementMode: 1
-  _maxWalkSpeed: 3
+  _maxWalkSpeed: 3.6
   _minAnalogWalkSpeed: 0
   _maxAcceleration: 20
   _brakingDecelerationWalking: 20
