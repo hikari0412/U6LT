@@ -2140,16 +2140,7 @@ ModelImporter:
             inWeight: 0
             outWeight: 0
           - serializedVersion: 3
-            time: 0.02
-            value: 1
-            inSlope: Infinity
-            outSlope: -3.5829945
-            tangentMode: 7
-            weightedMode: 0
-            inWeight: 0.33333334
-            outWeight: 0.83783793
-          - serializedVersion: 3
-            time: 0.14
+            time: 0.16
             value: 0
             inSlope: -0.0000043583104
             outSlope: Infinity
@@ -2158,7 +2149,7 @@ ModelImporter:
             inWeight: 1
             outWeight: 0
           - serializedVersion: 3
-            time: 0.56
+            time: 0.54
             value: 0
             inSlope: -0
             outSlope: 0.053812582
@@ -2167,7 +2158,7 @@ ModelImporter:
             inWeight: 0.33333334
             outWeight: 1
           - serializedVersion: 3
-            time: 0.66
+            time: 0.68
             value: 1
             inSlope: 0.013800505
             outSlope: Infinity
@@ -2201,7 +2192,7 @@ ModelImporter:
             inWeight: 0
             outWeight: 0
           - serializedVersion: 3
-            time: 0.06
+            time: 0.04
             value: 0
             inSlope: Infinity
             outSlope: 0.024679927
@@ -2210,7 +2201,7 @@ ModelImporter:
             inWeight: 0.33333334
             outWeight: 1
           - serializedVersion: 3
-            time: 0.16
+            time: 0.18
             value: 1
             inSlope: -0.091865525
             outSlope: Infinity
@@ -2219,7 +2210,7 @@ ModelImporter:
             inWeight: 1
             outWeight: 0.33333334
           - serializedVersion: 3
-            time: 0.58
+            time: 0.56
             value: 1
             inSlope: Infinity
             outSlope: -0.01507076
@@ -2228,7 +2219,7 @@ ModelImporter:
             inWeight: 0.33333334
             outWeight: 1
           - serializedVersion: 3
-            time: 0.7
+            time: 0.72
             value: 0
             inSlope: -0.023844771
             outSlope: Infinity
