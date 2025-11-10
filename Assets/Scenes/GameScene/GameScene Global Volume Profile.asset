@@ -192,8 +192,8 @@ MonoBehaviour:
     m_OverrideState: 0
     m_Value: 0
   saturation:
-    m_OverrideState: 0
-    m_Value: 0
+    m_OverrideState: 1
+    m_Value: -0
 --- !u!114 &-1724569658920232742
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -304,7 +304,7 @@ MonoBehaviour:
     m_Value: 1
   depthBufferThickness:
     m_OverrideState: 0
-    m_Value: 0.01
+    m_Value: 0.001
   screenFadeDistance:
     m_OverrideState: 1
     m_Value: 0.1
@@ -316,7 +316,7 @@ MonoBehaviour:
     m_Value: 0
   m_RayMaxIterations:
     m_OverrideState: 0
-    m_Value: 32
+    m_Value: 64
   rayMiss:
     m_OverrideState: 0
     m_Value: 3
@@ -435,7 +435,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84ea2044689082e498c8d3f7fb842f5d, type: 3}
   m_Name: GradientSky
   m_EditorClassIdentifier: 
-  active: 1
+  active: 0
   rotation:
     m_OverrideState: 0
     m_Value: 0
@@ -499,7 +499,7 @@ MonoBehaviour:
     m_Value: {x: 0.5, y: 0.5}
   intensity:
     m_OverrideState: 1
-    m_Value: 0.1
+    m_Value: 0.15
   smoothness:
     m_OverrideState: 1
     m_Value: 0.2

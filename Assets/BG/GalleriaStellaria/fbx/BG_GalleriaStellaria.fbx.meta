@@ -22,6 +22,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: Mat_BG_down_3_1
+    second: {fileID: 2100000, guid: 6c16c08a1aea0d64090b57d8c3bc437e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: Mat_BG_side
     second: {fileID: 2100000, guid: add25ccf4b897d34999d89ffe6e27c17, type: 2}
   - first:
