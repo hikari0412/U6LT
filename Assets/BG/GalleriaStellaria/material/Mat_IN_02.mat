@@ -153,7 +153,7 @@ Material:
     - _Metallic: 1
     - _NormalScale: 1
     - _Occlusion: 1
-    - _OcclusionStrength: 1
+    - _OcclusionStrength: 0.7
     - _OutLineNormalSource: 0
     - _OutlineClampScale: 1
     - _OutlineDirectLightingOffset: 0
@@ -189,8 +189,8 @@ Material:
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 1, g: 0.7932533, b: 0.4669811, a: 1}
-    - _Color: {r: 1, g: 0.7932533, b: 0.46698105, a: 1}
+    - _BaseColor: {r: 1, g: 0.8106618, b: 0.514151, a: 1}
+    - _Color: {r: 1, g: 0.8106618, b: 0.514151, a: 1}
     - _DirectRimBackCol: {r: 0.2, g: 0.2, b: 0.2, a: 0.5}
     - _DirectRimFrontCol: {r: 1, g: 1, b: 1, a: 0.5}
     - _EmissionCol: {r: 0, g: 0, b: 0, a: 1}
