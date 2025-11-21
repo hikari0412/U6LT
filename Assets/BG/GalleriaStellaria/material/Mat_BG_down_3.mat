@@ -178,8 +178,8 @@ Material:
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.9339623, g: 0.90929157, b: 0.8414472, a: 1}
-    - _Color: {r: 0.9339623, g: 0.90929157, b: 0.8414472, a: 1}
+    - _BaseColor: {r: 0.8490566, g: 0.83338493, b: 0.78898185, a: 1}
+    - _Color: {r: 0.8490566, g: 0.83338493, b: 0.78898185, a: 1}
     - _DirectRimBackCol: {r: 0.2, g: 0.2, b: 0.2, a: 0.5}
     - _DirectRimFrontCol: {r: 1, g: 1, b: 1, a: 0.5}
     - _EmissionCol: {r: 0, g: 0, b: 0, a: 1}

@@ -153,7 +153,7 @@ Material:
     - _Metallic: 1
     - _NormalScale: 1
     - _Occlusion: 1
-    - _OcclusionStrength: 0.5
+    - _OcclusionStrength: 0.2
     - _OutLineNormalSource: 0
     - _OutlineClampScale: 1
     - _OutlineDirectLightingOffset: 0
@@ -174,7 +174,7 @@ Material:
     - _ShadowSmoothNdotL: 0.25
     - _ShadowSmoothScene: 0.1
     - _ShadowStrength: 0.3
-    - _Smoothness: 0.6
+    - _Smoothness: 1
     - _SmoothnessTextureChannel: 0
     - _SpecularArea: 0.5
     - _SpecularHighlights: 1
@@ -189,8 +189,8 @@ Material:
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.8840867, g: 0.8862745, b: 0.83137256, a: 1}
-    - _Color: {r: 0.8840867, g: 0.8862745, b: 0.83137256, a: 1}
+    - _BaseColor: {r: 0.8171598, g: 0.8207547, b: 0.7704254, a: 1}
+    - _Color: {r: 0.8171598, g: 0.8207547, b: 0.7704254, a: 1}
     - _DirectRimBackCol: {r: 0.2, g: 0.2, b: 0.2, a: 0.5}
     - _DirectRimFrontCol: {r: 1, g: 1, b: 1, a: 0.5}
     - _EmissionCol: {r: 0, g: 0, b: 0, a: 1}

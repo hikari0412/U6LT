@@ -37,6 +37,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: Mat_dirt
+    second: {fileID: 2100000, guid: 64904276c5212174aa5160d80bfd10de, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: lambert1
     second: {fileID: 2100000, guid: d1626b6406f01454c9b29b08327c5521, type: 2}
   materials:
