@@ -113,7 +113,7 @@ Material:
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BlendOp: 0
-    - _BumpScale: 1
+    - _BumpScale: 0.5
     - _ClearCoat: 0
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
@@ -174,7 +174,7 @@ Material:
     - _ShadowSmoothNdotL: 0.25
     - _ShadowSmoothScene: 0.1
     - _ShadowStrength: 0.3
-    - _Smoothness: 1
+    - _Smoothness: 0.8
     - _SmoothnessTextureChannel: 0
     - _SpecularArea: 0.5
     - _SpecularHighlights: 1

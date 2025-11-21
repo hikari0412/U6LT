@@ -166,7 +166,7 @@ Material:
     - _OutlineClampScale: 1
     - _OutlineDirectLightingOffset: -1
     - _OutlinePunctualLightingOffset: 0
-    - _OutlineWidth: 0.35
+    - _OutlineWidth: 0.5
     - _Parallax: 0.005
     - _PunctualRimWidth: 2.75
     - _QueueOffset: 0

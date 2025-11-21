@@ -157,7 +157,7 @@ Material:
     - _OutlineClampScale: 1
     - _OutlineDirectLightingOffset: -1
     - _OutlinePunctualLightingOffset: 0
-    - _OutlineWidth: 0.35
+    - _OutlineWidth: 0.5
     - _Parallax: 0.005
     - _PunctualRimWidth: 2.75
     - _QueueOffset: 0
@@ -187,7 +187,7 @@ Material:
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 0.5882353}
     - _OutlineDirectLightingColor: {r: 0.09411765, g: 0.09411765, b: 0.09411765, a: 0.5019608}
     - _OutlinePunctualLightingColor: {r: 0.09411765, g: 0.09411765, b: 0.09411765, a: 0.5019608}
-    - _SelfEnvColor: {r: 1, g: 1, b: 1, a: 0.5}
+    - _SelfEnvColor: {r: 1.2311444, g: 1.2311444, b: 1.2311444, a: 0.5}
     - _SelfLight: {r: 1, g: 1, b: 1, a: 1}
     - _ShadowColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.5849056, g: 0.5849056, b: 0.5849056, a: 1}

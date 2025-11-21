@@ -115,7 +115,7 @@ Material:
     - _DirectRimWidth: 1.8
     - _DstBlend: 0
     - _DstBlendAlpha: 0
-    - _EnvColorLerp: 0.5
+    - _EnvColorLerp: 1
     - _EnvironmentReflections: 1
     - _FoldoutDirectLight: 0
     - _FoldoutDirectLightEnd: 0
@@ -148,7 +148,7 @@ Material:
     - _OutlineClampScale: 1
     - _OutlineDirectLightingOffset: 0
     - _OutlinePunctualLightingOffset: 0
-    - _OutlineWidth: 0.45
+    - _OutlineWidth: 0.7
     - _Parallax: 0.005
     - _PunctualRimWidth: 1
     - _QueueOffset: 0
