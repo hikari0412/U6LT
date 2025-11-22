@@ -154,7 +154,7 @@ Material:
     - _IndirDiffUpDirSH: 0
     - _IndirSpecCubeWeight: 0.5
     - _IndirSpecIntensity: 1
-    - _MainLightColorLerp: 0.5
+    - _MainLightColorLerp: 1
     - _Metallic: 0
     - _NormalScale: 1
     - _NoseSpecMax: 0.55288464

@@ -135,11 +135,11 @@ Material:
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _INDIR_CUBEMAP: 0
-    - _IndirDiffIntensity: 0.5
+    - _IndirDiffIntensity: 0.8
     - _IndirDiffUpDirSH: 0
     - _IndirSpecCubeWeight: 0.5
     - _IndirSpecIntensity: 3
-    - _MainLightColorLerp: 0.8
+    - _MainLightColorLerp: 1
     - _Metallic: 1
     - _NormalScale: 1
     - _Occlusion: 1

@@ -260,13 +260,13 @@ MonoBehaviour:
   active: 1
   shadows:
     m_OverrideState: 1
-    m_Value: {x: 0.949865, y: 0.9763522, z: 1, w: -0.05405405}
+    m_Value: {x: 0.9502988, y: 0.98452544, z: 1, w: -0.05405405}
   midtones:
     m_OverrideState: 1
-    m_Value: {x: 1, y: 1, z: 1, w: 0.03088803}
+    m_Value: {x: 1, y: 0.9549694, z: 0.99464995, w: 0.03088803}
   highlights:
     m_OverrideState: 1
-    m_Value: {x: 1, y: 1, z: 1, w: 0.023166025}
+    m_Value: {x: 1, y: 0.9652452, z: 0.94699055, w: 0.023166027}
   shadowsStart:
     m_OverrideState: 0
     m_Value: 0
@@ -471,7 +471,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c01700fd266d6914ababb731e09af2eb, type: 3}
   m_Name: DepthOfField
   m_EditorClassIdentifier: 
-  active: 0
+  active: 1
   mode:
     m_OverrideState: 1
     m_Value: 2
@@ -488,14 +488,14 @@ MonoBehaviour:
     m_OverrideState: 0
     m_Value: 0
   focusDistance:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 18
   aperture:
     m_OverrideState: 1
     m_Value: 5.9
   focalLength:
     m_OverrideState: 1
-    m_Value: 180
+    m_Value: 60
   bladeCount:
     m_OverrideState: 0
     m_Value: 5

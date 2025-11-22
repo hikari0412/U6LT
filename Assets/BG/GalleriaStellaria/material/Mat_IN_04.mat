@@ -153,7 +153,7 @@ Material:
     - _Metallic: 1
     - _NormalScale: 1
     - _Occlusion: 1
-    - _OcclusionStrength: 1
+    - _OcclusionStrength: 0.8
     - _OutLineNormalSource: 0
     - _OutlineClampScale: 1
     - _OutlineDirectLightingOffset: 0

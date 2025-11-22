@@ -139,7 +139,7 @@ Material:
     - _IndirDiffUpDirSH: 0
     - _IndirSpecCubeWeight: 0.5
     - _IndirSpecIntensity: 3
-    - _MainLightColorLerp: 0.8
+    - _MainLightColorLerp: 1
     - _Metallic: 1
     - _NormalScale: 1
     - _Occlusion: 1
@@ -191,7 +191,7 @@ Material:
     - _OutlinePunctualLightingColor: {r: 1, g: 1, b: 1, a: 0.5}
     - _RimColor: {r: 0.4811321, g: 0.4811321, b: 0.4811321, a: 1}
     - _SelfEnvColor: {r: 1, g: 1, b: 1, a: 0.5}
-    - _SelfLight: {r: 0.7529412, g: 0.7529412, b: 0.7529412, a: 1}
+    - _SelfLight: {r: 1, g: 1, b: 1, a: 1}
     - _ShadowColor: {r: 0.22745098, g: 0.23921569, b: 0.27450982, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}
