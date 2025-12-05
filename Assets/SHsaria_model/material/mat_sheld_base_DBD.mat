@@ -8,11 +8,12 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: mat_sheld_base_DBD
-  m_Shader: {fileID: 4800000, guid: 1ed5403678146694789b104fdba0e7d7, type: 3}
+  m_Shader: {fileID: 4800000, guid: 8146d972338ff894fb429f165801ea72, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - SN_VertColor
+  - _ALPHATEST_ON
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -26,7 +27,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: e3c45c872f60fd5479fba98e5204c7d3, type: 3}
+        m_Texture: {fileID: 2800000, guid: 94a2cafe15d3d264da43daad84067efa, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
@@ -62,7 +63,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMap:
-        m_Texture: {fileID: 2800000, guid: 1f5c08f2e0cb9c04fbe47d0bca7a21ff, type: 3}
+        m_Texture: {fileID: 2800000, guid: 59c6a430a601abb4b82e7f3214facefc, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -70,7 +71,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _PBRMask:
-        m_Texture: {fileID: 2800000, guid: 96310ee819f7cee4dac29fd83435086c, type: 3}
+        m_Texture: {fileID: 2800000, guid: 54511cc44782703428647b607e06675a, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ParallaxMap:
@@ -100,14 +101,14 @@ Material:
     m_Ints: []
     m_Floats:
     - _AddPrecomputedVelocity: 0
-    - _AlphaClip: 0
+    - _AlphaClip: 1
     - _AlphaToMask: 0
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 1
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
-    - _Cull: 2
+    - _Cull: 0
     - _Cutoff: 0.5
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
@@ -138,7 +139,7 @@ Material:
     - _IndirDiffIntensity: 0.5
     - _IndirDiffUpDirSH: 0
     - _IndirSpecCubeWeight: 0.5
-    - _IndirSpecIntensity: 3
+    - _IndirSpecIntensity: 0.3
     - _MainLightColorLerp: 1
     - _Metallic: 1
     - _NormalScale: 1
@@ -154,18 +155,18 @@ Material:
     - _QueueOffset: 0
     - _RampColorY: 0.625
     - _ReceiveShadows: 1
-    - _RimIntensity: 2
+    - _RimIntensity: 0.1
     - _RimRampIntensity: 3
     - _RimRampY: 0.675
     - _RimSoftIntensity: 0.58
-    - _RimSoftPower: 1.5
-    - _RimThreshold: 0.3
+    - _RimSoftPower: 0.2
+    - _RimThreshold: 0.928
     - _SHADOW_RAMP: 0
     - _ShadowOffset: 0.5
     - _ShadowSmoothNdotL: 0.1
     - _ShadowSmoothScene: 0.1
     - _ShadowStrength: 0.7
-    - _Smoothness: 0.8
+    - _Smoothness: 1
     - _SmoothnessTextureChannel: 0
     - _SpecularArea: 0.15
     - _SpecularHighlights: 1
@@ -189,7 +190,7 @@ Material:
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 0.8}
     - _OutlineDirectLightingColor: {r: 1, g: 1, b: 1, a: 0.5}
     - _OutlinePunctualLightingColor: {r: 1, g: 1, b: 1, a: 0.5}
-    - _RimColor: {r: 0.4811321, g: 0.4811321, b: 0.4811321, a: 1}
+    - _RimColor: {r: 0.8679245, g: 0.8679245, b: 0.8679245, a: 1}
     - _SelfEnvColor: {r: 1, g: 1, b: 1, a: 0.5}
     - _SelfLight: {r: 1, g: 1, b: 1, a: 1}
     - _ShadowColor: {r: 0.22745098, g: 0.23921569, b: 0.27450982, a: 1}
