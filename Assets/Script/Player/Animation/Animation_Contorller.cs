@@ -239,6 +239,20 @@ public class Animation_Contorller : MonoBehaviour
         if (graph.IsPlaying() == false)
         { graph.Play(); }
     }
+
+    /// <summary>
+    /// 播放冲刺动画（始终刷新并快速过渡）。
+    /// </summary>
+    public void PlayDashAnimation(AnimationClip animationClip, float speed = 1f, float transitionFixedTime = 0.1f)
+    {
+        if (animationClip == null)
+        {
+            Debug.LogWarning("[Animation_Contorller] Dash 动画片段为空。");
+            return;
+        }
+
+        PlaySingleAnimation(animationClip, speed, true, transitionFixedTime);
+    }
     #endregion
 
     #region ====================================== Play：混合动画 ======================================

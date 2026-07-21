@@ -21,6 +21,7 @@ public struct MotionSnapshot
     public Vector3 wishDirLocal;  // 本地输入方向（去掉y并归一化）
     public bool runHeld;          // 是否按住奔跑键
     public bool jumpBottonDown;         // 本帧是否按下跳跃键
+    public bool isDashing;        // 是否处于冲刺状态
 
     // === 帧事件（瞬时触发）===
     public bool justJumped;       // 这帧是否刚起跳

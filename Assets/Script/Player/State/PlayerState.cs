@@ -11,4 +11,5 @@ public enum PlayerState
     Idle,
     Move,
     Air,
+    Dash,
 }

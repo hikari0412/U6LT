@@ -73,6 +73,15 @@ public partial class @InputControls: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
+                    ""name"": ""Dash"",
+                    ""type"": ""Button"",
+                    ""id"": ""40df02f2-fa51-4184-8054-7d7dafab30ec"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
                     ""name"": ""ZoomInGamePad"",
                     ""type"": ""Button"",
                     ""id"": ""f4f3d81c-5e93-47a8-8adf-c22300ec090c"",
@@ -225,6 +234,28 @@ public partial class @InputControls: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 },
                 {
+                    ""name"": """",
+                    ""id"": ""92d8a99e-3f26-4cef-ae12-8c374c5f8bae"",
+                    ""path"": ""<Keyboard>/leftShift"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""Dash"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""d6a36ef4-4a3d-4b1e-90e2-aaa4565acd83"",
+                    ""path"": ""<Gamepad>/buttonEast"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Gamepad"",
+                    ""action"": ""Dash"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
                     ""name"": ""One Modifier"",
                     ""id"": ""272f0fd8-5b8f-429b-9526-6653c125f5f4"",
                     ""path"": ""OneModifier"",
@@ -332,6 +363,7 @@ public partial class @InputControls: IInputActionCollection2, IDisposable
         m_player_MoveSwitch = m_player.FindAction("MoveSwitch", throwIfNotFound: true);
         m_player_ZoomInGamePad = m_player.FindAction("ZoomInGamePad", throwIfNotFound: true);
         m_player_ZoomOutGamePad = m_player.FindAction("ZoomOutGamePad", throwIfNotFound: true);
+        m_player_Dash = m_player.FindAction("Dash", throwIfNotFound: true);
     }
 
     ~@InputControls()
@@ -405,6 +437,7 @@ public partial class @InputControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_player_MoveSwitch;
     private readonly InputAction m_player_ZoomInGamePad;
     private readonly InputAction m_player_ZoomOutGamePad;
+    private readonly InputAction m_player_Dash;
     public struct PlayerActions
     {
         private @InputControls m_Wrapper;
@@ -416,6 +449,7 @@ public partial class @InputControls: IInputActionCollection2, IDisposable
         public InputAction @MoveSwitch => m_Wrapper.m_player_MoveSwitch;
         public InputAction @ZoomInGamePad => m_Wrapper.m_player_ZoomInGamePad;
         public InputAction @ZoomOutGamePad => m_Wrapper.m_player_ZoomOutGamePad;
+        public InputAction @Dash => m_Wrapper.m_player_Dash;
         public InputActionMap Get() { return m_Wrapper.m_player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -446,6 +480,9 @@ public partial class @InputControls: IInputActionCollection2, IDisposable
             @ZoomOutGamePad.started += instance.OnZoomOutGamePad;
             @ZoomOutGamePad.performed += instance.OnZoomOutGamePad;
             @ZoomOutGamePad.canceled += instance.OnZoomOutGamePad;
+            @Dash.started += instance.OnDash;
+            @Dash.performed += instance.OnDash;
+            @Dash.canceled += instance.OnDash;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -471,6 +508,9 @@ public partial class @InputControls: IInputActionCollection2, IDisposable
             @ZoomOutGamePad.started -= instance.OnZoomOutGamePad;
             @ZoomOutGamePad.performed -= instance.OnZoomOutGamePad;
             @ZoomOutGamePad.canceled -= instance.OnZoomOutGamePad;
+            @Dash.started -= instance.OnDash;
+            @Dash.performed -= instance.OnDash;
+            @Dash.canceled -= instance.OnDash;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -515,5 +555,6 @@ public partial class @InputControls: IInputActionCollection2, IDisposable
         void OnMoveSwitch(InputAction.CallbackContext context);
         void OnZoomInGamePad(InputAction.CallbackContext context);
         void OnZoomOutGamePad(InputAction.CallbackContext context);
+        void OnDash(InputAction.CallbackContext context);
     }
 }

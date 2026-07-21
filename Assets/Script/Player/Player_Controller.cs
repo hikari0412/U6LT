@@ -79,7 +79,30 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
     private InputAction _moveSwitchAction;
     private InputAction _zoomInAction;
     private InputAction _zoomOutAction;
+    private InputAction _dashAction;
     private bool _walkToggle = false;
+
+    [Header("Dash Settings")]
+    [SerializeField] private float dashDistance = 5f;
+    [SerializeField] private float dashDuration = 0.25f;
+    [SerializeField] private float dashCooldown = 1f;
+    [SerializeField] private string dashAnimationName = "Dash";
+    [SerializeField] private float dashAnimationSpeed = 1f;
+    [SerializeField] private float dashTransitionFixedTime = 0.1f;
+
+    private bool _isDashing = false;
+    private float _dashTimer = 0f;
+    private float _dashCooldownTimer = 0f;
+    private Vector3 _dashDirection = Vector3.zero;
+    private bool _dashAnimationWarningLogged = false;
+
+    public bool IsDashing => _isDashing;
+    public Vector3 DashDirection => _dashDirection;
+    public bool HasDashAnimation =>
+        !string.IsNullOrEmpty(dashAnimationName) &&
+        shSariaConfig != null &&
+        shSariaConfig.StandAnimationDic != null &&
+        shSariaConfig.StandAnimationDic.ContainsKey(dashAnimationName);
 
 
     /// <summary>
@@ -123,6 +146,7 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
 
         // 本帧是否按下跳跃（来自输入事件的一次性标记）
         motionSS.jumpBottonDown = _jumpPressedFlag;
+        motionSS.isDashing = _isDashing;
 
         // 帧事件：起跳/落地
         // - 起跳：优先由输入事件标记
@@ -182,6 +206,7 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
         _moveSwitchAction = _input.player.MoveSwitch;   // Button
         _zoomInAction = _input.player.ZoomInGamePad;   // 按住 LB+RT
         _zoomOutAction = _input.player.ZoomOutGamePad; // 按住 LB+LT
+        _dashAction = _input.player.Dash; // Button
     }
 
     private void OnEnable()
@@ -198,6 +223,7 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
         _zoomOutAction.Enable();
 
         _moveSwitchAction.performed += OnMoveSwitch;
+        _dashAction.performed += OnDashPerformed;
     }
 
     private void OnDisable()
@@ -208,9 +234,12 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
         _jumpAction.canceled -= OnJumpCanceled;
 
         _moveSwitchAction.performed -= OnMoveSwitch;
+        _dashAction.performed -= OnDashPerformed;
 
         _zoomInAction.Disable();
         _zoomOutAction.Disable();
+
+        StopDash();
 
         _input.Disable();
     }
@@ -332,6 +361,20 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
             freeLookCam.Lens.FieldOfView = newFOV;
         }
 
+        if (_dashCooldownTimer > 0f)
+        {
+            _dashCooldownTimer = Mathf.Max(0f, _dashCooldownTimer - Time.deltaTime);
+        }
+
+        if (_isDashing)
+        {
+            _dashTimer -= Time.deltaTime;
+            if (_dashTimer <= 0f)
+            {
+                StopDash();
+            }
+        }
+
     }
 
     /// <summary>
@@ -340,13 +383,19 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
     private void FixedUpdate()
     {
         //把移动传给ECM2
-        Vector3 movementDirection = _wishDirWorld * _speedRatio;
+        Vector3 movementDirection = _isDashing ? Vector3.zero : _wishDirWorld * _speedRatio;
         ecmcharacter.SetMovementDirection(movementDirection);
     }
 
     private void OnCharacterMovementUpdated(float deltaTime)
     {
         BuildSnapshotFromECM2();
+
+        if (_isDashing && !CurrentMotion.isGrounded)
+        {
+            StopDash();
+        }
+
         var next = DecideState(CurrentMotion);
         if (next != currnetPlayerState)
         {
@@ -363,6 +412,9 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
         if (!motionSS.isGrounded)
             return PlayerState.Air;
 
+        if (motionSS.isDashing)
+            return PlayerState.Dash;
+
         // 在地面
         switch (currnetPlayerState)
         {
@@ -376,6 +428,9 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
 
             case PlayerState.Air:
                 // 保险：从空中回地面
+                return (motionSS.speedXZ >= START_MOVE) ? PlayerState.Move : PlayerState.Idle;
+
+            case PlayerState.Dash:
                 return (motionSS.speedXZ >= START_MOVE) ? PlayerState.Move : PlayerState.Idle;
         }
 
@@ -414,12 +469,97 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
         _jumpPressedFlag = false;
     }
 
+    private void OnDashPerformed(InputAction.CallbackContext ctx)
+    {
+        TryStartDash();
+    }
+
     // ----------------------------------------------------------------
     // 输入事件：键盘走跑切换
     // ----------------------------------------------------------------
     private void OnMoveSwitch(InputAction.CallbackContext ctx)
     {
         _walkToggle = !_walkToggle;
+    }
+
+    private void TryStartDash()
+    {
+        if (!CanDash()) return;
+
+        Vector3 dashDir = _wishDirWorld;
+        if (dashDir.sqrMagnitude < 0.0001f)
+        {
+            dashDir = modelTransform != null ? modelTransform.forward : transform.forward;
+        }
+
+        dashDir.y = 0f;
+        if (dashDir.sqrMagnitude < 0.0001f) return;
+
+        StartDash(dashDir.normalized);
+    }
+
+    private bool CanDash()
+    {
+        if (_isDashing) return false;
+        if (_dashCooldownTimer > 0f) return false;
+        if (ecmcharacter == null) return false;
+        if (!ecmcharacter.IsGrounded()) return false;
+        return true;
+    }
+
+    private void StartDash(Vector3 dashDir)
+    {
+        _isDashing = true;
+        _dashDirection = dashDir;
+        _dashTimer = Mathf.Max(0.01f, dashDuration);
+        _dashCooldownTimer = Mathf.Max(0f, dashCooldown);
+
+        var snapshot = CurrentMotion;
+        snapshot.isDashing = true;
+        CurrentMotion = snapshot;
+
+        float dashSpeed = dashDistance / _dashTimer;
+        Vector3 dashVelocity = dashDir * dashSpeed;
+        ecmcharacter.LaunchCharacter(dashVelocity, false, true);
+
+        ChangeState(PlayerState.Dash);
+    }
+
+    private void StopDash()
+    {
+        if (!_isDashing) return;
+
+        _isDashing = false;
+        _dashTimer = 0f;
+        _dashDirection = Vector3.zero;
+
+        var snapshot = CurrentMotion;
+        snapshot.isDashing = false;
+        CurrentMotion = snapshot;
+    }
+
+    public void PlayDashAnimation()
+    {
+        if (!HasDashAnimation)
+        {
+            if (!_dashAnimationWarningLogged)
+            {
+                Debug.LogWarning("[Player_Controller] 未配置 Dash 动画，将仅应用位移效果。");
+                _dashAnimationWarningLogged = true;
+            }
+            return;
+        }
+
+        if (animation_Contorller == null)
+        {
+            Debug.LogWarning("[Player_Controller] animation_Contorller 未配置，无法播放 Dash 动画。");
+            return;
+        }
+
+        if (shSariaConfig.StandAnimationDic.TryGetValue(dashAnimationName, out AnimationClip clip))
+        {
+            animation_Contorller.PlayDashAnimation(clip, dashAnimationSpeed, dashTransitionFixedTime);
+        }
     }
 
     /// <summary>
@@ -439,6 +579,9 @@ public class Player_Controller : SingletonMono<Player_Controller>, IStateMachine
                 break;
             case PlayerState.Air:
                 stateMachine.ChangeState<Player_AirState>();
+                break;
+            case PlayerState.Dash:
+                stateMachine.ChangeState<Player_DashState>();
                 break;
             default:
                 break;

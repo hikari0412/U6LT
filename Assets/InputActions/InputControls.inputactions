@@ -51,6 +51,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "Dash",
+                    "type": "Button",
+                    "id": "40df02f2-fa51-4184-8054-7d7dafab30ec",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "ZoomInGamePad",
                     "type": "Button",
                     "id": "f4f3d81c-5e93-47a8-8adf-c22300ec090c",
@@ -199,6 +208,28 @@
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
                     "action": "MoveSwitch",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "92d8a99e-3f26-4cef-ae12-8c374c5f8bae",
+                    "path": "<Keyboard>/leftShift",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "Dash",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d6a36ef4-4a3d-4b1e-90e2-aaa4565acd83",
+                    "path": "<Gamepad>/buttonEast",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "Dash",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
